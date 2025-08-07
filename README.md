@@ -12,6 +12,7 @@
 
 ### 2. **Lay Down**
 - **Description:** You lay down on the floor. This can be combined with the goon animation for some uhhh questionable stuff...
+- **Special Notes:** To use this with goon, you must first enable this and then enable goon.
 - **Usage:** Click the **LayDown** button in the GUI to start or stop the looped animation manually.
 
 ### 3. **Frontflip**
@@ -42,6 +43,15 @@
 ### 9. **Rejoin Button**
 - **Description:** Rejoins the current server incase there was a glitch or anything.
 - **Usage:** Click **Rejoin** in the GUI to instantly rejoin the same server.
+
+### 10. **Walkspeed**
+- **Description:** Sets your speed. (Only works in round as a survivor or killer)
+- **Usage:** Drag the slider to automatically set your speed value forever. Click the X icon to stop the loop
+
+### 11. **Jumppower**
+- **Description:** Sets your jump height.
+- **Special Notes:** This only works on PC as jump button is disabled on Mobile. (will not add jump support for mobile due to overlapping issues with the other abilities and plus you can always use frontflip)
+- **Usage:** Drag the slider to automatically set your jump height value forever. Click the X icon to stop the loop.
 
 ---
 
