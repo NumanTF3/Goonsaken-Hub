@@ -78,13 +78,17 @@
 - **Description:** Change the LMS song when it plays (Only for one round then you have to activate it again)
 - **Usage:** Select the LMS Song from the list (Burnout, Compass, Vanity, Close To Me, Plead and Creation Of Hatred) and then press the change lms song button.
 
-### 16. **Do All Generators**
+### 18. **Do All Generators**
 - **Description:** It teleports to every single generator and starts auto solving it
 - **Usage:** Press the button and wait (must be out of a gen first to do this) (also VERY VERY blatant as you teleport all around and others can see).
 
-### 16. **Emote as Killer**
+### 19. **Emote as Killer**
 - **Description:** You can now emote as the killer
 - **Usage:** Press L.
+
+### 20. **Geometry John Doe to Rochas**
+- **Description:** Turn Geometry John Doe into his Rochas counterpart.
+- **Usage:** Press the button which will bring up a small gui with a button to start. which will then wait for geometry john doe to exist and then turn him into rochas.
 
 ## How to Use
 
