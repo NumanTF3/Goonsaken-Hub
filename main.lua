@@ -1830,6 +1830,13 @@ if RayfieldLoaded then
             handleToggle(state)
         end
     })
+
+	PlayerTab:CreateButton({
+        Name = "Auto 404 Parry",
+        Callback = function()
+			loadstring(game:HttpGet('https://raw.githubusercontent.com/NumanTF3/auto-404-parry/refs/heads/main/main.lua'))()
+        end
+    })
     -- Game Tab
     GameTab:CreateToggle({
         Name = "ESP",
@@ -2024,4 +2031,5 @@ end
 ESP:SetEnabled(false)
 
 print("Goonsaken Hub by NumanTF2")
+
 
