@@ -90,6 +90,10 @@
 - **Description:** Turn Geometry John Doe into his Rochas counterpart.
 - **Usage:** Press the button which will bring up a small gui with a button to start. which will then wait for geometry john doe to exist and then turn him into rochas.
 
+### 20. **Auto 404 Parry**
+- **Description:** Automatically use 404 Error right before being stunned to get a speedboost.
+- **Usage:** Press the button. thats literally it. it will run in the background forever till you leave or serverhop.
+
 ## How to Use
 
 1. Paste the loadstring (below) into your Roblox executor.
