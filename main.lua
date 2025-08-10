@@ -1916,6 +1916,13 @@ if RayfieldLoaded then
         end
     })
 
+	MiscTab:CreateButton({
+        Name = "Geometry John Doe to Rochas",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/NumanTF3/Geometry-John-Doe-to-Rochas/refs/heads/main/main.lua"))()
+        end
+    })
+
     MiscTab:CreateKeybind({
         Name = "Emote as Killer",
         CurrentKeybind = "L",
@@ -2017,3 +2024,4 @@ end
 ESP:SetEnabled(false)
 
 print("Goonsaken Hub by NumanTF2")
+
