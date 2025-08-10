@@ -74,7 +74,7 @@
 - **Description:** It plays the sound when you enter its id...
 - **Usage:** Just input the id and press enter.
 
-### 17. **LMS Changer*
+### 17. **LMS Changer**
 - **Description:** Change the LMS song when it plays (Only for one round then you have to activate it again)
 - **Usage:** Select the LMS Song from the list (Burnout, Compass, Vanity, Close To Me, Plead and Creation Of Hatred) and then press the change lms song button.
 
