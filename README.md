@@ -1,6 +1,7 @@
 # Goonsaken Hub
 
 **A powerful all-in-one Roblox script hub featuring player animations, ESP, stats tracking, and useful utilities.**
+**Special Note: All features might not be supported on mobile**
 
 ---
 
@@ -53,7 +54,37 @@
 - **Special Notes:** This only works on PC as jump button is disabled on Mobile. (will not add jump support for mobile due to overlapping issues with the other abilities and plus you can always use frontflip)
 - **Usage:** Drag the slider to automatically set your jump height value forever. Click the X icon to stop the loop.
 
----
+### 12. **Chance Aimbot**
+- **Description:** Aims at the killer when you shoot.
+- **Usage:** Enable it and just shoot as chance. it will automatically aim at the killer. Best used without shiftlock.
+
+### 13. **Block TP**
+- **Description:** Teleports to the killer when they use an attack and Blocks to get a punch and then teleport back.
+- **Usage:** Enable it and when the killer attacks, you will automatically teleport to the killer, get a punch and teleport back to your last position. If you already have a punch then you do not teleport unless you've used up that punch.
+
+### 14. **Fully invisible upon cloning as 007n7**
+- **Description:** When you clone as 007n7, you are fully invisible.
+- **Usage:** Enable it and when you clone, you will become fully invisible
+
+### 15. **Do Current Generator**
+- **Description:** It does the current puzzle for you in the generator.
+- **Usage:** Press T (note you may have to actually wait a few seconds in a puzzle around 3 seconds before using this so you dont get kicked by the anticheat).
+
+### 16. **Play sound by ID**
+- **Description:** It plays the sound when you enter its id...
+- **Usage:** Just input the id and press enter.
+
+### 17. **LMS Changer*
+- **Description:** Change the LMS song when it plays (Only for one round then you have to activate it again)
+- **Usage:** Select the LMS Song from the list (Burnout, Compass, Vanity, Close To Me, Plead and Creation Of Hatred) and then press the change lms song button.
+
+### 16. **Do All Generators**
+- **Description:** It teleports to every single generator and starts auto solving it
+- **Usage:** Press the button and wait (must be out of a gen first to do this) (also VERY VERY blatant as you teleport all around and others can see).
+
+### 16. **Emote as Killer**
+- **Description:** You can now emote as the killer
+- **Usage:** Press L.
 
 ## How to Use
 
