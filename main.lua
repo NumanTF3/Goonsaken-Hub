@@ -22,6 +22,7 @@ end)
 local existence
 local animTrack
 local running = false
+local timebetweenpuzzles = 3.5
 
 local MaxRange = 120
 local hitboxmodificationEnabled = false
@@ -1630,7 +1631,7 @@ local function generatorDoAll()
                 task.wait(0.5)
                 prompt:InputHoldEnd()
             end
-            task.wait(3.2)
+            task.wait(timebetweenpuzzles)
             gen.Remotes.RE:FireServer()
         end
 
@@ -2094,40 +2095,52 @@ if RayfieldLoaded then
 	})
 
 	MiscTab:CreateButton({
-    Name = "Replace LMS Song",
-    Callback = function()
-        print("Waiting for Workspace.Themes.LastSurvivor to exist...")
-        
-        -- Wait for the sound object to appear in Workspace
-        local theme = game.Workspace:WaitForChild("Themes", 99999) -- 60 sec timeout
-        if not theme then
-            warn("Theme folder not found in Workspace!")
-            return
-        end
+    	Name = "Replace LMS Song",
+    	Callback = function()
+    	    print("Waiting for Workspace.Themes.LastSurvivor to exist...")
+    	    
+    	    -- Wait for the sound object to appear in Workspace
+    	    local theme = game.Workspace:WaitForChild("Themes", 99999) -- 60 sec timeout
+    	    if not theme then
+    	        warn("Theme folder not found in Workspace!")
+    	        return
+    	    end
+	
+	        local lastSurvivor = theme:WaitForChild("LastSurvivor", 60)
+	        if not lastSurvivor then
+	            warn("LastSurvivor sound not found!")
+    	        return
+    	    end
 
-        local lastSurvivor = theme:WaitForChild("LastSurvivor", 60)
-        if not lastSurvivor then
-            warn("LastSurvivor sound not found!")
-            return
-        end
-
-        -- Change song
-        local songId = LMSSongs[selectedSong]
-        if songId then
-            lastSurvivor.SoundId = songId
-            lastSurvivor:Play()
-            print("Changed LMS song to:", selectedSong)
-        else
-            warn("Invalid song name:", tostring(selectedSong))
-        end
-    end
-})
+       	 -- Change song
+    	    local songId = LMSSongs[selectedSong]
+    	    if songId then
+    	        lastSurvivor.SoundId = songId
+    	        lastSurvivor:Play()
+    	        print("Changed LMS song to:", selectedSong)
+    	    else
+    	        warn("Invalid song name:", tostring(selectedSong))
+    	    end
+    	end
+	})	
 
     BlatantTab:CreateButton({
         Name = "Do All Generators",
         Callback = function()
         	generatorDoAll()
         end
+    })
+
+	BlatantTab:CreateSlider({
+        Name = "Time Between Puzzles",
+        Range = {2.5, 6},
+        Increment = 0.5,
+        Suffix = "",
+        CurrentValue = 3.5,
+        Flag = "GenSpeedValue",
+        Callback = function(value)
+			timebetweenpuzzles = value
+		end
     })
 else
     -- Rayfield not loaded fallback: wire minimal keybinds and defaults
@@ -2221,3 +2234,4 @@ RunService.Heartbeat:Connect(function()
 	RunService.RenderStepped:Wait()
 	HumanoidRootPart.Velocity = oldVelocity
 end)
+
