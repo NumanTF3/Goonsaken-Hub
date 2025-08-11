@@ -2290,6 +2290,18 @@ if RayfieldLoaded then
 		end
     })
 
+    AutoBlockTab:CreateToggle({
+        Name = "Auto Block",
+        CurrentValue = false,
+        Callback = function(Value) autoBlockOn = Value end
+    })
+
+    AutoBlockTab:CreateToggle({
+        Name = "Strict Range",
+        CurrentValue = false,
+        Callback = function(Value) strictRangeOn = Value end
+    })
+
     AutoBlockTab:CreateDropdown({
         Name = "Facing Check",
         Options = {"Loose", "Strict"},
@@ -2641,6 +2653,7 @@ task.spawn(function()
         end
     end
 end)
+
 
 
 
