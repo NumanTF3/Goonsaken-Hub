@@ -12,6 +12,62 @@ local existence
 local animTrack
 local running = false
 
+local function ToggleInvis(enabled)
+    local character = LocalPlayer.Character or player.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    local animator = humanoid:FindFirstChildOfClass("Animator")
+    if not animator then
+        animator = Instance.new("Animator")
+        animator.Parent = humanoid
+    end
+
+    if enabled then
+        running = true
+        spawn(function()
+            while running do
+                local character = LocalPlayer.Character or player.CharacterAdded:Wait()
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if not humanoid then return end
+                print("got humanoid")
+
+                local animator = humanoid:FindFirstChildOfClass("Animator")
+                if not animator then
+                    animator = Instance.new("Animator")
+                    animator.Parent = humanoid
+                end
+
+                if true then
+                    if not animTrack or not animTrack.IsPlaying then
+                        local animation = Instance.new("Animation")
+                        animation.AnimationId = "rbxassetid://75804462760596"
+                        animTrack = animator:LoadAnimation(animation)
+                        animTrack.Looped = true
+                        animTrack:Play()
+                        animTrack:AdjustSpeed(0)
+                        humanoid.Parent.HumanoidRootPart.Transparency = 0.4
+                    end
+                else
+                    if animTrack and animTrack.IsPlaying then
+                        animTrack:Stop()
+                        animTrack = nil
+                        humanoid.Parent.HumanoidRootPart.Transparency = 1
+                    end
+                end
+                wait(0.5)
+            end
+        end)
+    else
+        running = false
+        if animTrack and animTrack.IsPlaying then
+            animTrack:Stop()
+            animTrack = nil
+            humanoid.Parent.HumanoidRootPart.Transparency = 1
+        end
+    end
+end
+
 local function handleToggle(enabled)
     local character = LocalPlayer.Character or player.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -27,6 +83,16 @@ local function handleToggle(enabled)
         running = true
         spawn(function()
             while running do
+                local character = LocalPlayer.Character or player.CharacterAdded:Wait()
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if not humanoid then return end
+
+                local animator = humanoid:FindFirstChildOfClass("Animator")
+                if not animator then
+                    animator = Instance.new("Animator")
+                    animator.Parent = humanoid
+                end
+                
                 local torso = character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
                 if torso and torso.Transparency ~= 0 then
                     if not animTrack or not animTrack.IsPlaying then
@@ -36,11 +102,13 @@ local function handleToggle(enabled)
                         animTrack.Looped = true
                         animTrack:Play()
                         animTrack:AdjustSpeed(0)
+						humanoid.Parent.HumanoidRootPart.Transparency = 0.4
                     end
                 else
                     if animTrack and animTrack.IsPlaying then
                         animTrack:Stop()
                         animTrack = nil
+						humanoid.Parent.HumanoidRootPart.Transparency = 1
                     end
                 end
                 wait(0.5)
@@ -51,6 +119,7 @@ local function handleToggle(enabled)
         if animTrack and animTrack.IsPlaying then
             animTrack:Stop()
             animTrack = nil
+			humanoid.Parent.HumanoidRootPart.Transparency = 1
         end
     end
 end
@@ -1745,7 +1814,7 @@ if RayfieldLoaded then
     })
 
     PlayerTab:CreateSlider({
-        Name = "JumpPower",
+        Name = "Jump Power",
         Range = {0, 100},
         Increment = 1,
         Suffix = "",
@@ -1775,7 +1844,7 @@ if RayfieldLoaded then
     })
 
     PlayerTab:CreateToggle({
-        Name = "LayDown",
+        Name = "Lay Down",
         CurrentValue = false,
         Flag = "LayDownToggle",
         Callback = function(state)
@@ -1822,19 +1891,37 @@ if RayfieldLoaded then
         end
     })
 
+	PlayerTab:CreateToggle({
+        Name = "Invisible",
+        CurrentValue = false,
+        Flag = "Invis",
+        Callback = function(state)
+			if state then
+				Rayfield:Notify({
+   					Title = "Read me!",
+   					Content = "The block in the middle of your screen is your player! it is still invisible to others. it is just to guide you where you are.",
+    				Duration = 6.5,
+    				Image = 4483362458,
+				})
+			end
+            ToggleInvis(state)
+        end
+    })
+
     PlayerTab:CreateToggle({
         Name = "Fully Invisible Upon Cloning (007n7)",
         CurrentValue = false,
         Flag = "Invis007n7",
         Callback = function(state)
+			if state then
+				Rayfield:Notify({
+   					Title = "Read me!",
+   					Content = "When Cloning, The block in the middle of your screen is your player! it is still invisible to others. it is just to guide you where you are.",
+    				Duration = 6.5,
+    				Image = 4483362458,
+				})
+			end
             handleToggle(state)
-        end
-    })
-
-	PlayerTab:CreateButton({
-        Name = "Auto 404 Parry",
-        Callback = function()
-			loadstring(game:HttpGet('https://raw.githubusercontent.com/NumanTF3/auto-404-parry/refs/heads/main/main.lua'))()
         end
     })
     -- Game Tab
@@ -1849,7 +1936,7 @@ if RayfieldLoaded then
     })
 
     GameTab:CreateToggle({
-        Name = "StatsTracker",
+        Name = "Stats Tracker",
         CurrentValue = false,
         Flag = "StatsTrackerToggle",
         Callback = function(state)
@@ -1920,13 +2007,6 @@ if RayfieldLoaded then
         Name = "Infinite Yield",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-        end
-    })
-
-	MiscTab:CreateButton({
-        Name = "Geometry John Doe to Rochas",
-        Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/NumanTF3/Geometry-John-Doe-to-Rochas/refs/heads/main/main.lua"))()
         end
     })
 
@@ -2008,7 +2088,7 @@ if RayfieldLoaded then
 })
 
     BlatantTab:CreateButton({
-        Name = "Generator Do All",
+        Name = "Do All Generators",
         Callback = function()
         	generatorDoAll()
         end
@@ -2031,5 +2111,3 @@ end
 ESP:SetEnabled(false)
 
 print("Goonsaken Hub by NumanTF2")
-
-
