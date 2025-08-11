@@ -101,8 +101,12 @@
 
 ### 23. **Hitbox Modifier**
 - **Description** Modify your hitbox to hit anyone within a customizable range
-- **Special Notes:** Modify the range by editing the value below the toggle option.
+- **Special Notes:** You can modify the range by editing the value below the toggle option.
 - **Usage:** Toggle it on and play. your hitbox will be modified to always reach the killer as survivor within a range from you and vise versa
+
+- ### 24. **Auto 1x1x1x1 Popups**
+- **Description** Automatically does the 1x1x1x1 popups for you.
+- **Usage:** Toggle it on and play. when you get entangled. the popups will immediately close.
 
 ## How to Use
 
