@@ -2077,8 +2077,8 @@ if RayfieldLoaded then
         end
     })
     
-    GameTab:CreateKeybind({
-        Name = "Do Current Puzzle (must be in generator plus one puzzle only)",
+    GameTab:CreateButton({
+        Name = "Do Current Puzzle (must be in generator plus one puzzle only )",
         Callback = function()
 			Rayfield:Notify({
     			Title = "READ ME!",
@@ -2323,6 +2323,7 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
+
 
 
 
