@@ -1950,6 +1950,13 @@ if RayfieldLoaded then
         end
     })
 
+		PlayerTab:CreateButton({
+        Name = "Auto Raging Pace Parry",
+        Callback = function()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/NumanTF3/auto-raging-pace/refs/heads/main/main.lua"))()
+        end
+    })
+
     PlayerTab:CreateToggle({
         Name = "Chance Aimbot",
         CurrentValue = false,
@@ -2344,6 +2351,7 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
+
 
 
 
