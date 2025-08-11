@@ -112,6 +112,10 @@
 - **Description** Hides your username and display name. (only for you so you can record safely)
 - **Usage:** Toggle it on and play.
 
+### 26. *Auto Raging Pace Parry**
+- **Description"** Automatically does Raging Pace right before you get stunned so you avoid the stun
+- **Usage:** Click the button and play. you will auto raging pace whenever you are about to be stunned.
+
 ## How to Use
 
 1. Paste the loadstring (below) into your Roblox executor.
