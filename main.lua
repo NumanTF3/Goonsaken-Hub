@@ -1690,10 +1690,8 @@ local function generatorDoAll()
         for puzzleNum = 1, 4 do
             local prompt = gen.Main:WaitForChild("Prompt", 1)
             if prompt then
-				task.wait(0.5)
-                prompt:InputHoldBegin()
-                task.wait(1)
-                prompt:InputHoldEnd()
+				fireproximityprompt(gen.Main:WaitForChild("Prompt", 1))
+				local PuzzleUI = Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("PuzzleUI", 9999)
             end
             task.wait(timebetweenpuzzles)
             gen.Remotes.RE:FireServer()
@@ -1942,6 +1940,13 @@ if RayfieldLoaded then
             if frontflipObj and frontflipObj.Flip then
                 frontflipObj.Flip()
             end
+        end
+    })
+
+	PlayerTab:CreateButton({
+        Name = "Auto 404 Parry",
+        Callback = function()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/NumanTF3/auto-404-parry/refs/heads/main/main.lua"))()
         end
     })
 
@@ -2339,6 +2344,7 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
+
 
 
 
