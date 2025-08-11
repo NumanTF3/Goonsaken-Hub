@@ -6,11 +6,25 @@ local GuiService = game:GetService("GuiService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
+local RNG = Random.new()
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local Animator = Humanoid:WaitForChild("Animator")
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+	Character = char
+	Humanoid = char:WaitForChild("Humanoid")
+	Animator = Humanoid:WaitForChild("Animator")
+	HumanoidRootPart = char:WaitForChild("HumanoidRootPart")
+end)
 
 local existence
-
 local animTrack
 local running = false
+
+local MaxRange = 120
+local hitboxmodificationEnabled = false
 
 local function ToggleInvis(enabled)
     local character = LocalPlayer.Character or player.CharacterAdded:Wait()
@@ -1924,6 +1938,28 @@ if RayfieldLoaded then
             handleToggle(state)
         end
     })
+
+	PlayerTab:CreateToggle({
+		Name = "Hitbox Modifier",
+		CurrentValue = false,
+		Flag = "hitboxmodifier",
+		Callback = function(Value)
+			hitboxmodificationEnabled = Value
+		end
+	})
+
+	PlayerTab:CreateInput({
+		Name = "Hitbox Detection Distance",
+		PlaceholderText = "120",
+		RemoveTextAfterFocusLost = false,
+		Flag = "detectionrange",
+		Callback = function(Value)
+			local num = tonumber(Value)
+			if num then
+				MaxRange = num
+			end
+		end
+	})
     -- Game Tab
     GameTab:CreateToggle({
         Name = "ESP",
@@ -2111,3 +2147,77 @@ end
 ESP:SetEnabled(false)
 
 print("Goonsaken Hub by NumanTF2")
+
+local AttackAnimations = {
+	"rbxassetid://131430497821198", "rbxassetid://83829782357897", "rbxassetid://126830014841198",
+	"rbxassetid://126355327951215", "rbxassetid://121086746534252", "rbxassetid://105458270463374",
+	"rbxassetid://127172483138092", "rbxassetid://18885919947", "rbxassetid://18885909645",
+	"rbxassetid://87259391926321", "rbxassetid://106014898528300", "rbxassetid://86545133269813",
+	"rbxassetid://89448354637442", "rbxassetid://90499469533503", "rbxassetid://116618003477002",
+	"rbxassetid://106086955212611", "rbxassetid://107640065977686", "rbxassetid://77124578197357",
+	"rbxassetid://101771617803133", "rbxassetid://134958187822107", "rbxassetid://111313169447787",
+	"rbxassetid://71685573690338", "rbxassetid://129843313690921", "rbxassetid://97623143664485",
+	"rbxassetid://136007065400978", "rbxassetid://86096387000557", "rbxassetid://108807732150251",
+	"rbxassetid://138040001965654", "rbxassetid://73502073176819", "rbxassetid://86709774283672",
+	"rbxassetid://140703210927645", "rbxassetid://96173857867228", "rbxassetid://121255898612475",
+	"rbxassetid://98031287364865", "rbxassetid://119462383658044", "rbxassetid://77448521277146",
+	"rbxassetid://103741352379819", "rbxassetid://131696603025265", "rbxassetid://122503338277352",
+	"rbxassetid://97648548303678", "rbxassetid://94162446513587", "rbxassetid://84426150435898",
+	"rbxassetid://93069721274110", "rbxassetid://114620047310688", "rbxassetid://97433060861952",
+	"rbxassetid://82183356141401", "rbxassetid://100592913030351", "rbxassetid://121293883585738",
+	"rbxassetid://70447634862911", "rbxassetid://92173139187970", "rbxassetid://106847695270773",
+	"rbxassetid://125403313786645", "rbxassetid://81639435858902", "rbxassetid://137314737492715",
+	"rbxassetid://120112897026015", "rbxassetid://82113744478546", "rbxassetid://118298475669935",
+	"rbxassetid://126681776859538", "rbxassetid://129976080405072", "rbxassetid://109667959938617",
+	"rbxassetid://74707328554358", "rbxassetid://133336594357903", "rbxassetid://86204001129974",
+	"rbxassetid://124243639579224", "rbxassetid://70371667919898", "rbxassetid://131543461321709",
+	"rbxassetid://136323728355613", "rbxassetid://109230267448394"
+}
+
+RunService.Heartbeat:Connect(function()
+	if not hitboxmodificationEnabled then return end
+	if not HumanoidRootPart then return end
+
+	local playing = false
+	for _, track in ipairs(Humanoid:GetPlayingAnimationTracks()) do
+		if table.find(AttackAnimations, track.Animation.AnimationId)
+			and (track.TimePosition / track.Length < 0.75) then
+			playing = true
+			break
+		end
+	end
+
+	if not playing then return end
+
+	local Target
+	local NearestDist = MaxRange
+
+	local function scanGroup(group)
+		for _, obj in ipairs(group) do
+			if obj == Character or not obj:FindFirstChild("HumanoidRootPart") then continue end
+			local dist = (obj.HumanoidRootPart.Position - HumanoidRootPart.Position).Magnitude
+			if dist < NearestDist then
+				NearestDist = dist
+				Target = obj
+			end
+		end
+	end
+
+	scanGroup(workspace.Players:GetDescendants())
+	local npcs = workspace:FindFirstChild("Map", true) and workspace.Map:FindFirstChild("NPCs", true)
+	if npcs then
+		scanGroup(npcs:GetChildren())
+	end
+
+	if not Target then return end
+
+	local ping = LocalPlayer:GetNetworkPing()
+	local randomOffset = Vector3.new(RNG:NextNumber(-1.5, 1.5), 0, RNG:NextNumber(-1.5, 1.5))
+	local predicted = Target.HumanoidRootPart.Position + randomOffset + (Target.HumanoidRootPart.Velocity * (ping * 1.25))
+	local neededVelocity = (predicted - HumanoidRootPart.Position) / (ping * 2)
+
+	local oldVelocity = HumanoidRootPart.Velocity
+	HumanoidRootPart.Velocity = neededVelocity
+	RunService.RenderStepped:Wait()
+	HumanoidRootPart.Velocity = oldVelocity
+end)
