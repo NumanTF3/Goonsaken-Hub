@@ -1138,13 +1138,28 @@ end
 local function triggerNearestGenerator()
     local gen = findNearestGenerator()
     if gen and gen:FindFirstChild("Remotes") and gen.Remotes:FindFirstChild("RE") then
-        task.wait(5)
-		gen.Remotes.RE:FireServer()
+        
+        local lastFire = 0
+        local conn
+        conn = RunService.Heartbeat:Connect(function()
+            if gen.Progress.Value >= 100 then
+                conn:Disconnect()
+                return
+            end
+            
+            -- fire every 5 seconds
+            if tick() - lastFire >= 5 then
+                gen.Remotes.RE:FireServer()
+                lastFire = tick()
+            end
+        end)
+
         print("Triggered generator:", gen.Name)
     else
         print("No generator or remote found!")
     end
 end
+
 
 -- Enable aimbot function
 local function enableAimbot()
@@ -2078,7 +2093,7 @@ if RayfieldLoaded then
     })
     
     GameTab:CreateButton({
-        Name = "Do Current Puzzle (must be in generator plus one puzzle only )",
+        Name = "Do Current Generator (must be in generator)",
         Callback = function()
 			Rayfield:Notify({
     			Title = "READ ME!",
@@ -2323,6 +2338,7 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
+
 
 
 
