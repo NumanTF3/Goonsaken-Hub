@@ -1843,7 +1843,7 @@ else
 end
 
 -- Create Rayfield window & tabs if Rayfield loaded
-local Window, PlayerTab, GameTab, MiscTab, BlatantTab
+local Window, PlayerTab, GameTab, MiscTab, BlatantTab, AutoBlockTab, PredictiveTab, FakeBlockTab, AutoPunchTab, CustomAnimationsTab
 if RayfieldLoaded then
     Window = Rayfield:CreateWindow({
         Name = "Goonsaken Hub by NumanTF2",
@@ -1865,7 +1865,52 @@ if RayfieldLoaded then
     GameTab = Window:CreateTab("Game", "gamepad-2")
     MiscTab = Window:CreateTab("Misc", 4483362458)
     BlatantTab = Window:CreateTab("Blatant", "angry")
+	AutoBlockTab = Window:CreateTab("Auto Block", 4483362458)
+	PredictiveTab = Window:CreateTab("Predictive Auto Block", 4483362458)
+	FakeBlockTab = Window:CreateTab("Fake Block", 4483362458)
+	AutoPunchTab = Window:CreateTab("Auto Punch", 4483362458)
+	CustomAnimationsTab = Window:CreateTab("Custom Animations", 4483362458)
 end
+
+local autoBlockOn = false
+local strictRangeOn = false
+local looseFacing = true
+local detectionRange = 18
+
+local predictiveBlockOn = false
+local detectionRange = 10
+local edgeKillerDelay = 3
+local killerInRangeSince = nil
+local predictiveCooldown = 0
+
+local autoPunchOn = false
+local flingPunchOn = false
+local flingPower = 10000
+local hiddenfling = false
+local aimPunch = false
+
+local customBlockEnabled = false
+local customBlockAnimId = ""
+local customPunchEnabled = false
+local customPunchAnimId = ""
+
+local infiniteStamina = false
+
+local lastBlockTime = 0
+local lastPunchTime = 0
+local lastBlockTpTime = 0
+
+local blockAnimIds = {
+"72722244508749",
+"96959123077498"
+}
+local punchAnimIds = {
+"87259391926321"
+}
+
+local customChargeEnabled = false
+local customChargeAnimId = ""
+local chargeAnimIds = { "106014898528300" }
 
 -- Stats GUI creation now (kept hidden until toggle)
 statsGui = createStatsTracker()
@@ -2136,6 +2181,12 @@ if RayfieldLoaded then
         end
     })
 
+	MiscTab:CreateParagraph({
+	    Title = "Tip",
+	    Content = 'Run Infinite Yield and type "antifling" so punch fling works better.'
+	})
+
+
 	MiscTab:CreateToggle({
         Name = "NameProtect (Hides your username)",
         CurrentValue = false,
@@ -2240,6 +2291,184 @@ if RayfieldLoaded then
 			timebetweenpuzzles = value
 		end
     })
+
+    AutoBlockTab:CreateDropdown({
+        Name = "Facing Check",
+        Options = {"Loose", "Strict"},
+        CurrentOption = "Loose",
+        Callback = function(Option) looseFacing = Option == "Loose" end
+    })
+
+    AutoBlockTab:CreateInput({
+        Name = "Detection Range",
+        PlaceholderText = "18",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(Text)
+            detectionRange = tonumber(Text) or detectionRange
+        end
+    })
+
+    AutoBlockTab:CreateParagraph({
+        Title = "⚠️ Warning",
+        Content = "plz do not use blocktp with fake block or disaster strucks"
+    })
+
+    AutoBlockTab:CreateParagraph({
+        Title = "",
+        Content = "increase range so block tp works better (30 studs recommended)"
+    })
+
+    local blockTPEnabled = false
+
+    AutoBlockTab:CreateToggle({
+        Name = "Block TP",
+        CurrentValue = false,
+        Callback = function(Value)
+            blockTPEnabled = Value
+        end
+    })
+
+
+    PredictiveTab:CreateToggle({
+        Name = "Predictive Auto Block",
+        CurrentValue = false,
+        Callback = function(Value)
+            predictiveBlockOn = Value
+        end
+    })
+
+    PredictiveTab:CreateInput({
+        Name = "Detection Range",
+        PlaceholderText = "10",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(text)
+            local num = tonumber(text)
+            if num then
+                detectionRange = num
+            end
+        end
+    })
+
+
+    PredictiveTab:CreateSlider({
+        Name = "Edge Killer",
+        Range = {0, 7},
+        Increment = 0.1,
+        CurrentValue = 3,
+        Callback = function(val)
+            edgeKillerDelay = val
+        end
+    })
+
+    PredictiveTab:CreateParagraph({
+        Title = "Edge Killer",
+        Content = "How many seconds until it blocks (to counter smartass players) (resets when killer gets out of range)"
+    })
+
+    FakeBlockTab:CreateButton({
+        Name = "Load Fake Block",
+        Callback = function()
+            pcall(function()
+                local fakeGui = PlayerGui:FindFirstChild("FakeBlockGui")
+                if not fakeGui then
+                    local success, result = pcall(function()
+                        return loadstring(game:HttpGet("https://pastebin.com/raw/ztnYv27k"))()
+                    end)
+                    if not success then
+                        warn("❌ Failed to load Fake Block GUI:", result)
+                    end
+                else
+                    fakeGui.Enabled = true
+                    print("✅ Fake Block GUI enabled")
+                end
+            end)
+        end
+    })
+
+    AutoPunchTab:CreateToggle({
+        Name = "Auto Punch",
+        CurrentValue = false,
+        Callback = function(Value) autoPunchOn = Value end
+    })
+
+    AutoPunchTab:CreateToggle({
+        Name = "Fling Punch",
+        CurrentValue = false,
+        Callback = function(Value) flingPunchOn = Value end
+    })
+
+    AutoPunchTab:CreateToggle({
+        Name = "Punch Aimbot",
+        CurrentValue = false,
+        Callback = function(Value) aimPunch = Value end
+    })
+
+    local predictionValue = 4
+
+    AutoPunchTab:CreateSlider({
+        Name = "Aim Prediction",
+        Range = {0, 10},
+        Increment = 0.1,
+        Suffix = "studs",
+        CurrentValue = predictionValue,
+        Flag = "PredictionSlider",
+        Callback = function(Value)
+            predictionValue = Value
+        end,
+    })
+
+    AutoPunchTab:CreateSlider({
+        Name = "Fling Power",
+        Range = {5000, 50000000000000},
+        Increment = 1000000,
+        CurrentValue = 10000,
+        Callback = function(Value) flingPower = Value end
+    })
+
+    CustomAnimationsTab:CreateInput({
+        Name = "Custom Block Animation",
+        PlaceholderText = "AnimationId",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(Text) customBlockAnimId = Text end
+    })
+
+    CustomAnimationsTab:CreateToggle({
+        Name = "Enable Custom Block Animation",
+        CurrentValue = false,
+        Callback = function(Value) customBlockEnabled = Value end
+    })
+
+    CustomAnimationsTab:CreateInput({
+        Name = "Custom Punch Animation (not for M3/M4)",
+        PlaceholderText = "AnimationId",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(Text) customPunchAnimId = Text end
+    })
+
+    CustomAnimationsTab:CreateToggle({
+        Name = "Enable Custom Punch Animation",
+        CurrentValue = false,
+        Callback = function(Value) customPunchEnabled = Value end
+    })
+
+    CustomAnimationsTab:CreateInput({
+        Name = "Charge Animation ID",
+        PlaceholderText = "Put animation ID here",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(input)
+            customChargeAnimId = input
+        end,
+    })
+
+    CustomAnimationsTab:CreateToggle({
+        Name = "Custom Charge Animation",
+        CurrentValue = false,
+        Callback = function(value)
+            customChargeEnabled = value
+        end,
+    })
+
+
 else
     -- Rayfield not loaded fallback: wire minimal keybinds and defaults
     warn("Rayfield not loaded; GUI controls unavailable. Core features remain active via defaults where possible.")
@@ -2352,12 +2581,65 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
+local lastReplaceTime = {
+    block = 0,
+    punch = 0,
+    charge = 0,
+}
 
+-- Continuous custom animation replacer (runs forever if toggled on)
+task.spawn(function()
+    while true do
+        RunService.Heartbeat:Wait()
 
+        local char = lp.Character
+        if not char then continue end
 
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        local animator = humanoid and humanoid:FindFirstChildOfClass("Animator")
+        if not animator then continue end
 
+        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+            local animId = tostring(track.Animation.AnimationId):match("%d+")
 
+            -- Block animation replacement
+            if customBlockEnabled and customBlockAnimId ~= "" and table.find(blockAnimIds, animId) then
+                if tick() - lastReplaceTime.block >= 3 then
+                    lastReplaceTime.block = tick()
+                    track:Stop()
+                    local newAnim = Instance.new("Animation")
+                    newAnim.AnimationId = "rbxassetid://" .. customBlockAnimId
+                    local newTrack = animator:LoadAnimation(newAnim)
+                    newTrack:Play()
+                    break
+                end
+            end
 
+            -- Punch animation replacement
+            if customPunchEnabled and customPunchAnimId ~= "" and table.find(punchAnimIds, animId) then
+                if tick() - lastReplaceTime.punch >= 3 then
+                    lastReplaceTime.punch = tick()
+                    track:Stop()
+                    local newAnim = Instance.new("Animation")
+                    newAnim.AnimationId = "rbxassetid://" .. customPunchAnimId
+                    local newTrack = animator:LoadAnimation(newAnim)
+                    newTrack:Play()
+                    break
+                end
+            end
 
-
-
+            -- Charge animation replacement
+            if customChargeEnabled and customChargeAnimId ~= "" and table.find(chargeAnimIds, animId) then
+                if tick() - lastReplaceTime.charge >= 3 then
+                    lastReplaceTime.charge = tick()
+                    track:Stop()
+                    local newAnim = Instance.new("Animation")
+                    newAnim.AnimationId = "rbxassetid://" .. customChargeAnimId
+                    local newTrack = animator:LoadAnimation(newAnim)
+                    newTrack:Play()
+                    break
+                end
+            end
+        end
+    end
+end)
