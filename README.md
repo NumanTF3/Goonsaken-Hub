@@ -108,6 +108,10 @@
 - **Description** Automatically does the 1x1x1x1 popups for you.
 - **Usage:** Toggle it on and play. when you get entangled. the popups will immediately close.
 
+### 25. **NameProtect**
+- **Description** Hides your username and display name. (only for you so you can record safely)
+- **Usage:** Toggle it on and play.
+
 ## How to Use
 
 1. Paste the loadstring (below) into your Roblox executor.
