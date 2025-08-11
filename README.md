@@ -115,6 +115,75 @@
 ### 26. *Auto Raging Pace Parry**
 - **Description"** Automatically does Raging Pace right before you get stunned so you avoid the stun
 - **Usage:** Click the button and play. you will auto raging pace whenever you are about to be stunned.
+- 
+---
+
+## Added Auto Block & Predictive Features
+
+### 27. **Facing Check (Loose/Strict)**
+- **Description:** Choose how strictly the script checks player facing.
+- **Usage:** Select either **Loose** or **Strict** from the dropdown in the Auto Block tab.
+
+### 28. **Detection Range**
+- **Description:** Set how far the script detects targets for auto blocking.
+- **Usage:** Input your desired range number in the Detection Range field.
+
+### 29. **Warning Messages**
+- **Description:** Alerts users about unsafe usage with Block TP.
+- **Usage:** Read the warning paragraphs in the Auto Block tab to avoid misuse.
+
+### 30. **Block TP**
+- **Description:** Teleports to the killer on attack to block and then teleports back to your previous position.
+- **Usage:** Toggle **Block TP** on or off in the Auto Block tab.
+
+### 31. **Predictive Auto Block**
+- **Description:** Automatically blocks attacks using prediction algorithms.
+- **Usage:** Toggle **Predictive Auto Block** on or off in the Predictive Auto Block tab.
+
+### 32. **Predictive Detection Range**
+- **Description:** Set the detection distance specifically for predictive blocking.
+- **Usage:** Input your desired range number in the Predictive Detection Range field.
+
+### 33. **Edge Killer Delay**
+- **Description:** Set delay timing for edge blocking behavior (seconds until it blocks).
+- **Usage:** Adjust the slider labeled **Edge Killer** in the Predictive Auto Block tab.
+
+### 34. **Load Fake Block GUI**
+- **Description:** Loads an additional GUI for advanced fake blocking features.
+- **Usage:** Click **Load Fake Block** button in the Fake Block tab.
+
+### 35. **Auto Punch**
+- **Description:** Automatically punches opponents continuously.
+- **Usage:** Toggle **Auto Punch** on or off in the Auto Punch tab.
+
+### 36. **Fling Punch**
+- **Description:** Enables a punch mode with physics that fling the opponent.
+- **Usage:** Toggle **Fling Punch** on or off in the Auto Punch tab.
+
+### 37. **Punch Aimbot**
+- **Description:** Automatically aims punches toward targets.
+- **Usage:** Toggle **Punch Aimbot** on or off in the Auto Punch tab.
+
+### 38. **Aim Prediction**
+- **Description:** Adjusts prediction strength for punch aiming.
+- **Usage:** Use the **Aim Prediction** slider in the Auto Punch tab to set the value.
+
+### 39. **Fling Power**
+- **Description:** Adjusts the power applied during fling punches.
+- **Usage:** Use the **Fling Power** slider in the Auto Punch tab.
+
+### 40. **Custom Block Animation**
+- **Description:** Set a custom animation ID for blocking.
+- **Usage:** Input the animation ID in the **Custom Block Animation** field and toggle it on/off.
+
+### 41. **Custom Punch Animation**
+- **Description:** Set a custom animation ID for punching (not for M3/M4 weapons).
+- **Usage:** Input the animation ID and toggle the custom punch animation on/off.
+
+### 42. **Charge Animation ID**
+- **Description:** Set a custom animation ID for charging.
+- **Usage:** Input the animation ID and toggle the charge animation on/off.
+
 
 ## How to Use
 
