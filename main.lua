@@ -2080,6 +2080,11 @@ if RayfieldLoaded then
     GameTab:CreateKeybind({
         Name = "Do Current Puzzle (must be in generator plus one puzzle only)",
         Callback = function()
+			Rayfield:Notify({
+    			Title = "READ ME!",
+    			Content = "The generator puzzle will be done after 5 seconds. Do not spam or you will get kicked!",
+    			Duration = 5
+			})
             triggerNearestGenerator()
         end
     })
@@ -2318,6 +2323,7 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
+
 
 
 
