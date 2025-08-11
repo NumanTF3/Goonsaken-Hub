@@ -94,6 +94,11 @@
 - **Description:** Automatically use 404 Error right before being stunned to get a speedboost.
 - **Usage:** Press the button. thats literally it. it will run in the background forever till you leave or serverhop.
 
+### 22. **Invisibility**
+- **Description** Become invisible to others
+- **Special Notes:** There will be a block where your player's torso was. that is ONLY seen by you and no one else. it is just meant to guide you on your screen where you are currently.
+- **Usage:** Toggle it on and you will become invisible.
+
 ## How to Use
 
 1. Paste the loadstring (below) into your Roblox executor.
