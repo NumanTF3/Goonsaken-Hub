@@ -11,7 +11,8 @@ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local Animator = Humanoid:WaitForChild("Animator")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-local Do1x1PopupsLoop
+local Do1x1PopupsLoop = false
+local nameprotectEnabled = false
 
 LocalPlayer.CharacterAdded:Connect(function(char)
 	Character = char
@@ -1137,7 +1138,7 @@ end
 local function triggerNearestGenerator()
     local gen = findNearestGenerator()
     if gen and gen:FindFirstChild("Remotes") and gen.Remotes:FindFirstChild("RE") then
-        task.wait(3.5)
+        task.wait(5)
 		gen.Remotes.RE:FireServer()
         print("Triggered generator:", gen.Name)
     else
@@ -1223,6 +1224,18 @@ local function applyPlayerESP(character, color)
     highlight.Adornee = character
     highlight.Parent = character
 
+	local billboard = Instance.new("BillboardGui", character:WaitForChild("Head"))
+	billboard.Name = "PlayerESPBillboard"
+	billboard.Size = UDim2.new(0, 100, 0, 50)
+	billboard.StudsOffset = Vector3.new(0, 2, 0)
+	local textLabel = Instance.new("TextLabel", billboard)
+	textLabel.Size = UDim2.new(1, 0, 1, 0)
+	textLabel.Text = character.Name
+	textLabel.TextColor3 = Color3.new(1, 1, 1)
+	textLabel.TextStrokeTransparency = 0
+	textLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+	billboard.AlwaysOnTop = true
+	textLabel.BackgroundTransparency = 1
     -- Set initial visibility
     setHighlightVisibility(highlight, ESP.Enabled)
     allHighlights[highlight] = true
@@ -2090,6 +2103,15 @@ if RayfieldLoaded then
         end
     })
 
+	MiscTab:CreateToggle({
+        Name = "NameProtect (Hides your username)",
+        CurrentValue = false,
+        Flag = "nameprotect",
+        Callback = function(state)
+            nameprotectEnabled = state
+        end
+    })
+
     MiscTab:CreateKeybind({
         Name = "Emote as Killer",
         CurrentKeybind = "L",
@@ -2231,6 +2253,15 @@ local AttackAnimations = {
 }
 
 RunService.Heartbeat:Connect(function()
+    if not nameprotectEnabled then return end
+    for _, lbl in ipairs(game:GetDescendants()) do
+        if lbl:IsA("TextLabel") and (lbl.Text:find(Player.Name) or lbl.Text:find(Player.DisplayName)) then
+            lbl.Text = lbl.Text:gsub(Player.Name, "Hidden"):gsub(Player.DisplayName, "Hidden")
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
 	if not hitboxmodificationEnabled then return end
 	if not HumanoidRootPart then return end
 
@@ -2276,6 +2307,16 @@ RunService.Heartbeat:Connect(function()
 	HumanoidRootPart.Velocity = neededVelocity
 	RunService.RenderStepped:Wait()
 	HumanoidRootPart.Velocity = oldVelocity
+end)
+
+RunService.Heartbeat:Connect(function()
+	if PlayersFolder and not ESP.Enabled then
+  		for _, obj in ipairs(PlayersFolder:GetDescendants()) do
+          	if obj.Name == "PlayerESPBillboard" then
+            	obj:Destroy()
+            end
+        end
+    end
 end)
 
 
