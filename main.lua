@@ -1690,8 +1690,9 @@ local function generatorDoAll()
         for puzzleNum = 1, 4 do
             local prompt = gen.Main:WaitForChild("Prompt", 1)
             if prompt then
+				task.wait(0.5)
                 prompt:InputHoldBegin()
-                task.wait(0.5)
+                task.wait(1)
                 prompt:InputHoldEnd()
             end
             task.wait(timebetweenpuzzles)
@@ -2338,6 +2339,7 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
+
 
 
 
