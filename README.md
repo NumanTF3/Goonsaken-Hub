@@ -184,6 +184,14 @@
 - **Description:** Set a custom animation ID for charging.
 - **Usage:** Input the animation ID and toggle the charge animation on/off.
 
+### 43. **Ultra Instinct**
+- **Description:** Dodge the killer automatically with sum cool animations.
+- **Usage:** Press the button and a gui will popup. enable it from there.
+
+### 43. **Auto Two Time Backstab and Aimbot**
+- **Description:** Automatically backstabs and uses aimbot to look towards the killer's back.
+- **Usage:** Press the button and a gui will popup. enable it from there.
+
 
 ## How to Use
 
