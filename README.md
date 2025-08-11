@@ -153,15 +153,15 @@
 - **Usage:** Click **Load Fake Block** button in the Fake Block tab.
 
 ### 35. **Auto Punch**
-- **Description:** Automatically punches opponents continuously.
+- **Description:** Automatically punches killer upon blocking.
 - **Usage:** Toggle **Auto Punch** on or off in the Auto Punch tab.
 
 ### 36. **Fling Punch**
-- **Description:** Enables a punch mode with physics that fling the opponent.
+- **Description:** Flings killer upon punching.
 - **Usage:** Toggle **Fling Punch** on or off in the Auto Punch tab.
 
 ### 37. **Punch Aimbot**
-- **Description:** Automatically aims punches toward targets.
+- **Description:** Automatically aims punches toward killers.
 - **Usage:** Toggle **Punch Aimbot** on or off in the Auto Punch tab.
 
 ### 38. **Aim Prediction**
@@ -177,7 +177,7 @@
 - **Usage:** Input the animation ID in the **Custom Block Animation** field and toggle it on/off.
 
 ### 41. **Custom Punch Animation**
-- **Description:** Set a custom animation ID for punching (not for M3/M4 weapons).
+- **Description:** Set a custom animation ID for punching.
 - **Usage:** Input the animation ID and toggle the custom punch animation on/off.
 
 ### 42. **Charge Animation ID**
