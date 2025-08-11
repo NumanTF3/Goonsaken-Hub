@@ -2015,15 +2015,10 @@ if RayfieldLoaded then
         end
     })
 
-    PlayerTab:CreateToggle({
-        Name = "Block TP",
-        CurrentValue = false,
-        Flag = "BlockTPToggle",
-        Callback = function(skibiditoilet)
-            print(skibiditoilet)
-            if skibiditoilet == true then
-                startAutoBlock(skibiditoilet)
-            end
+    PlayerTab:CreateButton({
+        Name = "Auto Two Time Backstab and Aimbot",
+        Callback = function()
+            loadstring(game:HttpGet('https://github.com/NumanTF3/two-time-backstab/blob/main/main.lua'))()
         end
     })
 
@@ -2643,3 +2638,4 @@ task.spawn(function()
         end
     end
 end)
+
