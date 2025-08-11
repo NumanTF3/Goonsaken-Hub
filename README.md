@@ -99,6 +99,11 @@
 - **Special Notes:** There will be a block where your player's torso was. that is ONLY seen by you and no one else. it is just meant to guide you on your screen where you are currently.
 - **Usage:** Toggle it on and you will become invisible.
 
+### 23. **Hitbox Modifier**
+- **Description** Modify your hitbox to hit anyone within a customizable range
+- **Special Notes:** Modify the range by editing the value below the toggle option.
+- **Usage:** Toggle it on and play. your hitbox will be modified to always reach the killer as survivor within a range from you and vise versa
+
 ## How to Use
 
 1. Paste the loadstring (below) into your Roblox executor.
