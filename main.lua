@@ -1647,7 +1647,7 @@ end
 
 local function generatorDoAll()
     -- Get fresh character, humanoid, and rootPart each time
-    local character = player.Character or player.CharacterAdded:Wait()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local rootPart = character:FindFirstChild("HumanoidRootPart")
     if not humanoid or not rootPart then
@@ -2274,7 +2274,7 @@ local AttackAnimations = {
 
 RunService.Heartbeat:Connect(function()
     if not nameprotectEnabled then return end
-    for _, lbl in ipairs(game:GetDescendants()) do
+    for _, lbl in ipairs(game.Players:GetDescendants()) do
         if lbl:IsA("TextLabel") and (lbl.Text:find(Player.Name) or lbl.Text:find(Player.DisplayName)) then
             lbl.Text = lbl.Text:gsub(Player.Name, "Hidden"):gsub(Player.DisplayName, "Hidden")
         end
@@ -2338,6 +2338,7 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
+
 
 
 
