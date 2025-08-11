@@ -1137,7 +1137,8 @@ end
 local function triggerNearestGenerator()
     local gen = findNearestGenerator()
     if gen and gen:FindFirstChild("Remotes") and gen.Remotes:FindFirstChild("RE") then
-        gen.Remotes.RE:FireServer()
+        task.wait(3.5)
+		gen.Remotes.RE:FireServer()
         print("Triggered generator:", gen.Name)
     else
         print("No generator or remote found!")
@@ -2064,10 +2065,7 @@ if RayfieldLoaded then
     })
     
     GameTab:CreateKeybind({
-        Name = "Trigger Nearest Generator Keybind",
-        CurrentKeybind = "T",
-        HoldToInteract = false,
-        Flag = "TriggerGenKeybind",
+        Name = "Do Current Puzzle (must be in generator plus one puzzle only)",
         Callback = function()
             triggerNearestGenerator()
         end
@@ -2279,5 +2277,6 @@ RunService.Heartbeat:Connect(function()
 	RunService.RenderStepped:Wait()
 	HumanoidRootPart.Velocity = oldVelocity
 end)
+
 
 
