@@ -11,6 +11,7 @@ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local Animator = Humanoid:WaitForChild("Animator")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local Do1x1PopupsLoop
 
 LocalPlayer.CharacterAdded:Connect(function(char)
 	Character = char
@@ -18,6 +19,39 @@ LocalPlayer.CharacterAdded:Connect(function(char)
 	Animator = Humanoid:WaitForChild("Animator")
 	HumanoidRootPart = char:WaitForChild("HumanoidRootPart")
 end)
+
+local function Do1x1x1x1Popups()
+	while true do
+		if Do1x1PopupsLoop then
+			local player = game:GetService("Players").LocalPlayer
+			local popups = player.PlayerGui.TemporaryUI:GetChildren()
+			
+			for _, i in ipairs(popups) do
+				if i.Name == "1x1x1x1Popup" then
+					local centerX = i.AbsolutePosition.X + (i.AbsoluteSize.X / 2)
+					local centerY = i.AbsolutePosition.Y + (i.AbsoluteSize.Y / 2) + 50
+					VIM:SendMouseButtonEvent(
+						centerX,
+						centerY,
+						Enum.UserInputType.MouseButton1.Value,
+						true,
+						player.PlayerGui,
+						1
+					)
+					VIM:SendMouseButtonEvent(
+						centerX,
+						centerY,
+						Enum.UserInputType.MouseButton1.Value,
+						false,
+						player.PlayerGui,
+						1
+					)
+				end
+			end
+		end
+		task.wait(0.1)
+	end
+end
 
 local existence
 local animTrack
@@ -2039,6 +2073,17 @@ if RayfieldLoaded then
         end
     })
 
+    GameTab:CreateToggle({
+        Name = "Auto 1x1x1x1 Popups",
+        CurrentValue = false,
+        Flag = "auto1x1x1x1popups",
+        Callback = function(state)
+            Do1x1PopupsLoop = state
+			if state then
+				task.spawn(Do1x1x1x1Popups)
+			end
+        end
+    })
     -- Misc Tab
     MiscTab:CreateButton({
         Name = "Infinite Yield",
@@ -2234,4 +2279,5 @@ RunService.Heartbeat:Connect(function()
 	RunService.RenderStepped:Wait()
 	HumanoidRootPart.Velocity = oldVelocity
 end)
+
 
