@@ -1559,15 +1559,11 @@ local function enableInfiniteStamina()
     local success, StaminaModule = pcall(function()
         return require(game.ReplicatedStorage.Systems.Character.Game.Sprinting)
     end)
-    if success and StaminaModule then
-        StaminaModule.StaminaLossDisabled = true
-        activeConnections.Stamina = RunService.Heartbeat:Connect(function()
-            StaminaModule.Stamina = StaminaModule.MaxStamina
-            if StaminaModule.StaminaChanged and type(StaminaModule.StaminaChanged.Fire) == "function" then
-                StaminaModule.StaminaChanged:Fire()
-            end
-        end)
-    end
+	if success and StaminaModule then
+		task.wait(0.1)
+		StaminaModule.Stamina = StaminaModule.MaxStamina
+		StaminaModule.StaminaChanged:Fire()
+	end
 end
 
 local function disableInfiniteStamina()
@@ -2645,5 +2641,6 @@ task.spawn(function()
         end
     end
 end)
+
 
 
