@@ -2590,8 +2590,8 @@ end)
 
 -- Helpers
 local function fireRemoteBlock()
-local args = {"UseActorAbility", "Block"}
-ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+	local args = {"UseActorAbility", "Block"}
+	ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
 end
 
 local function isFacing(localRoot, targetRoot)
@@ -2674,6 +2674,12 @@ coroutine.wrap(function()
     end
 end)()
 
+RunService.RenderStepped:Connect(function()
+	local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local Humanoid = Character:WaitForChild("Humanoid")
+	local Animator = Humanoid:WaitForChild("Animator")
+	local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+end
 -- Auto block + punch detection loop
 RunService.RenderStepped:Connect(function()
     local myChar = lp.Character
@@ -2934,3 +2940,4 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function()
         enableInfiniteStamina()
     end
 end)
+
