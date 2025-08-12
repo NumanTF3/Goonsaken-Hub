@@ -112,13 +112,9 @@
 - **Description** Hides your username and display name. (only for you so you can record safely)
 - **Usage:** Toggle it on and play.
 
-### 26. *Auto Raging Pace Parry**
+### 26. **Auto Raging Pace Parry**
 - **Description"** Automatically does Raging Pace right before you get stunned so you avoid the stun
 - **Usage:** Click the button and play. you will auto raging pace whenever you are about to be stunned.
-- 
----
-
-## Added Auto Block & Predictive Features
 
 ### 27. **Facing Check (Loose/Strict)**
 - **Description:** Choose how strictly the script checks player facing.
@@ -128,9 +124,9 @@
 - **Description:** Set how far the script detects targets for auto blocking.
 - **Usage:** Input your desired range number in the Detection Range field.
 
-### 29. **Warning Messages**
-- **Description:** Alerts users about unsafe usage with Block TP.
-- **Usage:** Read the warning paragraphs in the Auto Block tab to avoid misuse.
+### 29. **Auto Two Time Backstab and Aimbot**
+- **Description:** Automatically backstabs and uses aimbot to look towards the killer's back.
+- **Usage:** Press the button and a gui will popup. enable it from there.
 
 ### 30. **Block TP**
 - **Description:** Teleports to the killer on attack to block and then teleports back to your previous position.
@@ -186,10 +182,6 @@
 
 ### 43. **Ultra Instinct**
 - **Description:** Dodge the killer automatically with sum cool animations.
-- **Usage:** Press the button and a gui will popup. enable it from there.
-
-### 43. **Auto Two Time Backstab and Aimbot**
-- **Description:** Automatically backstabs and uses aimbot to look towards the killer's back.
 - **Usage:** Press the button and a gui will popup. enable it from there.
 
 
