@@ -1338,7 +1338,6 @@ end
 RunService.Heartbeat:Connect(function()
     local survivors = PlayersFolder:FindFirstChild("Survivors")
     local killers = PlayersFolder:FindFirstChild("Killers")
-
     if survivors then
         for _, char in ipairs(survivors:GetChildren()) do
             applyPlayerESP(char, COLOR_SURVIVOR)
@@ -2234,14 +2233,19 @@ if RayfieldLoaded then
         end
     })
 
+    --[[
 	MiscTab:CreateToggle({
         Name = "NameProtect (Hides your username)",
         CurrentValue = false,
-        Flag = "nameprotect",
+        Flag = "auto1x1x1x1popups",
         Callback = function(state)
-            nameprotectEnabled = state
+            Do1x1PopupsLoop = state
+			if state then
+				nameprotectEnabled = state
+			end
         end
     })
+	]]--
 
     MiscTab:CreateKeybind({
         Name = "Emote as Killer",
@@ -2572,15 +2576,66 @@ local AttackAnimations = {
 	"rbxassetid://124243639579224", "rbxassetid://70371667919898", "rbxassetid://131543461321709",
 	"rbxassetid://136323728355613", "rbxassetid://109230267448394"
 }
-
-RunService.Heartbeat:Connect(function()
-    if not nameprotectEnabled then return end
-    for _, lbl in ipairs(game.Players:GetDescendants()) do
-        if lbl:IsA("TextLabel") and (lbl.Text:find(Player.Name) or lbl.Text:find(Player.DisplayName)) then
-            lbl.Text = lbl.Text:gsub(Player.Name, "Hidden"):gsub(Player.DisplayName, "Hidden")
+--[[
+local function NameProtect(state)
+	task.wait()
+    local function updateNames()
+		task.wait()
+        local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
+        local CurrentSurvivors = playerGui:FindFirstChild("TemporaryUI")
+            and playerGui.TemporaryUI:FindFirstChild("PlayerInfo")
+            and playerGui.TemporaryUI.PlayerInfo:FindFirstChild("CurrentSurvivors")
+        
+        if CurrentSurvivors then
+            for _, People in pairs(CurrentSurvivors:GetChildren()) do
+                if People:IsA("Frame") then
+                    local name
+                    local success = false
+                    repeat
+                        name = "Protected"
+                    until success
+                    People.Username.Text = name
+                end
+            end
         end
     end
-end)
+
+    if state then
+        local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
+
+        local function setupConnections()
+            local TemporaryUI = playerGui:WaitForChild("TemporaryUI", math.huge)
+            local PlayerInfo = TemporaryUI:WaitForChild("PlayerInfo", math.huge)
+
+            playerGui.ChildAdded:Connect(function(child)
+                if child.Name == "TemporaryUI" then
+                    updateNames()
+                end
+            end)
+            TemporaryUI.ChildAdded:Connect(function(child)
+                if child.Name == "PlayerInfo" then
+                    updateNames()
+                end
+            end)
+            PlayerInfo.ChildAdded:Connect(function(child)
+                if child.Name == "CurrentSurvivors" then
+                    updateNames()
+                end
+            end)
+        end
+
+        setupConnections()
+        updateNames()
+
+        if playerGui.MainUI.PlayerListHolder then
+            playerGui.MainUI.PlayerListHolder:Destroy()
+        end
+        if playerGui.MainUI.Spectate.Username then
+            playerGui.MainUI.Spectate.Username.Visible = false
+        end
+    end
+end
+--]]
 
 -- Helpers
 local function fireRemoteBlock()
@@ -2925,6 +2980,64 @@ task.spawn(function()
             end
         end
     end
+end)
+
+RunService.RenderStepped:Connect(function()
+	local char = LocalPlayer.Character
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	local esp = humanoid.Parent:FindFirstChild(PLAYER_ESP_NAME)
+    if esp then
+        esp:Destroy()
+    end
+end)
+
+--// Hitbox ride logic
+RunService.Heartbeat:Connect(function()
+	if not hitboxmodificationEnabled then return end
+	if not HumanoidRootPart then return end
+
+	local playing = false
+	for _, track in ipairs(Humanoid:GetPlayingAnimationTracks()) do
+		if table.find(AttackAnimations, track.Animation.AnimationId)
+			and (track.TimePosition / track.Length < 0.75) then
+			playing = true
+			break
+		end
+	end
+
+	if not playing then return end
+
+	local Target
+	local NearestDist = MaxRange
+
+	local function scanGroup(group)
+		for _, obj in ipairs(group) do
+			if obj == Character or not obj:FindFirstChild("HumanoidRootPart") then continue end
+			local dist = (obj.HumanoidRootPart.Position - HumanoidRootPart.Position).Magnitude
+			if dist < NearestDist then
+				NearestDist = dist
+				Target = obj
+			end
+		end
+	end
+
+	scanGroup(workspace.Players:GetDescendants())
+	local npcs = workspace:FindFirstChild("Map", true) and workspace.Map:FindFirstChild("NPCs", true)
+	if npcs then
+		scanGroup(npcs:GetChildren())
+	end
+
+	if not Target then return end
+
+	local ping = LocalPlayer:GetNetworkPing()
+	local randomOffset = Vector3.new(RNG:NextNumber(-1.5, 1.5), 0, RNG:NextNumber(-1.5, 1.5))
+	local predicted = Target.HumanoidRootPart.Position + randomOffset + (Target.HumanoidRootPart.Velocity * (ping * 1.25))
+	local neededVelocity = (predicted - HumanoidRootPart.Position) / (ping * 2)
+
+	local oldVelocity = HumanoidRootPart.Velocity
+	HumanoidRootPart.Velocity = neededVelocity
+	RunService.RenderStepped:Wait()
+	HumanoidRootPart.Velocity = oldVelocity
 end)
 
 -- Readd infinite stamina
