@@ -1233,6 +1233,8 @@ local function applyPlayerESP(character, color)
     if not character:IsA("Model") then return end
     if character:FindFirstChild(PLAYER_ESP_NAME) then return end
 
+	if character == LocalPlayer.Character then return end
+
     local highlight = Instance.new("Highlight")
     highlight.Name = PLAYER_ESP_NAME
     highlight.FillColor = color
@@ -1397,6 +1399,17 @@ function ESP:SetEnabled(state)
     ESP.Enabled = state
     for highlight,_ in pairs(allHighlights) do
         setHighlightVisibility(highlight, state)
+    end
+	local playersFolder = game.Workspace:FindFirstChild("Players")
+    if playersFolder then
+        for _, playerType in pairs(playersFolder:GetChildren()) do -- Survivors, Killers folders etc.
+            for _, char in pairs(playerType:GetChildren()) do
+                local billboard = char:FindFirstChild("PlayerESPBillboard", true) -- recursive search
+                if billboard then
+                    billboard.Enabled = state
+                end
+            end
+        end
     end
 end
 
@@ -2982,15 +2995,6 @@ task.spawn(function()
     end
 end)
 
-RunService.RenderStepped:Connect(function()
-	local char = LocalPlayer.Character
-	local humanoid = char:FindFirstChildOfClass("Humanoid")
-	local esp = humanoid.Parent:FindFirstChild(PLAYER_ESP_NAME)
-    if esp then
-        esp:Destroy()
-    end
-end)
-
 --// Hitbox ride logic
 RunService.Heartbeat:Connect(function()
 	if not hitboxmodificationEnabled then return end
@@ -3047,3 +3051,4 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function()
         enableInfiniteStamina()
     end
 end)
+
