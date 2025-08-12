@@ -2234,12 +2234,6 @@ if RayfieldLoaded then
         end
     })
 
-	MiscTab:CreateParagraph({
-	    Title = "Tip",
-	    Content = 'Run Infinite Yield and type "antifling" so punch fling works better.'
-	})
-
-
 	MiscTab:CreateToggle({
         Name = "NameProtect (Hides your username)",
         CurrentValue = false,
@@ -2650,7 +2644,13 @@ local function playCustomAnim(animId, isPunch)
     end
 end
 
--- Fling coroutine
+RunService.RenderStepped:Connect(function()
+	local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local Humanoid = Character:WaitForChild("Humanoid")
+	local Animator = Humanoid:WaitForChild("Animator")
+	local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+end)
+
 coroutine.wrap(function()
     local hrp, c, vel, movel = nil, nil, nil, 0.1
     while true do
@@ -2658,7 +2658,7 @@ coroutine.wrap(function()
         if hiddenfling then
             while hiddenfling and not (c and c.Parent and hrp and hrp.Parent) do
                 RunService.Heartbeat:Wait()
-                c = lp.Character
+                c = LocalPlayer.Character
                 hrp = c and c:FindFirstChild("HumanoidRootPart")
             end
             if hiddenfling then
@@ -2674,15 +2674,9 @@ coroutine.wrap(function()
     end
 end)()
 
+-- auto block loop
 RunService.RenderStepped:Connect(function()
-	local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	local Humanoid = Character:WaitForChild("Humanoid")
-	local Animator = Humanoid:WaitForChild("Animator")
-	local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-end
--- Auto block + punch detection loop
-RunService.RenderStepped:Connect(function()
-    local myChar = lp.Character
+    local myChar = LocalPlayer.Character
     if not myChar then return end
     local myRoot = myChar:FindFirstChild("HumanoidRootPart")
     Humanoid = myChar:FindFirstChildOfClass("Humanoid")
@@ -2716,7 +2710,7 @@ RunService.RenderStepped:Connect(function()
         for _, track in ipairs(Humanoid:GetPlayingAnimationTracks()) do
             local animId = tostring(track.Animation.AnimationId):match("%d+")
             if animId == "72722244508749" or animId == "96959123077498" then
-                local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+                local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
                 if myRoot then
                     local killers = {"c00lkidd", "Jason", "JohnDoe", "1x1x1x1", "Noli"}
                     for _, name in ipairs(killers) do
@@ -2730,8 +2724,8 @@ RunService.RenderStepped:Connect(function()
                             task.spawn(function()
                                 local startTime = tick()
                                 while tick() - startTime < 0.5 do
-                                    if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
-                                        local myRoot = lp.Character.HumanoidRootPart
+                                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                                        local myRoot = LocalPlayer.Character.HumanoidRootPart
                                         local targetHRP = killer.HumanoidRootPart
                                         local direction = targetHRP.CFrame.LookVector
                                         local tpPosition = targetHRP.Position + direction * 6
@@ -2753,7 +2747,7 @@ RunService.RenderStepped:Connect(function()
     -- Predictive Auto Block: Check killer range and time
     if predictiveBlockOn and tick() > predictiveCooldown then
         local killersFolder = workspace:FindFirstChild("Players") and workspace.Players:FindFirstChild("Killers")
-        local myChar = lp.Character
+        local myChar = LocalPlayer.Character
         local myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
         local myHum = myChar and myChar:FindFirstChild("Humanoid")
 
@@ -2804,7 +2798,7 @@ RunService.RenderStepped:Connect(function()
 
                 if killer and killer:FindFirstChild("HumanoidRootPart") then
                     local root = killer.HumanoidRootPart
-                    local myChar = lp.Character
+                    local myChar = LocalPlayer.Character
                     local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
                     if root and myRoot and (root.Position - myRoot.Position).Magnitude <= 10 then
 
@@ -2845,9 +2839,9 @@ RunService.RenderStepped:Connect(function()
                             task.spawn(function()
                                 local start = tick()
                                 while tick() - start < 1 do
-                                    if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") and targetHRP and targetHRP.Parent then
+                                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and targetHRP and targetHRP.Parent then
                                         local frontPos = targetHRP.Position + (targetHRP.CFrame.LookVector * 2)
-                                        lp.Character.HumanoidRootPart.CFrame = CFrame.new(frontPos, targetHRP.Position)
+                                        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(frontPos, targetHRP.Position)
                                     end
                                     task.wait()
                                 end
@@ -2881,7 +2875,7 @@ task.spawn(function()
     while true do
         RunService.Heartbeat:Wait()
 
-        local char = lp.Character
+        local char = LocalPlayer.Character
         if not char then continue end
 
         local humanoid = char:FindFirstChildOfClass("Humanoid")
@@ -2940,4 +2934,3 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function()
         enableInfiniteStamina()
     end
 end)
-
