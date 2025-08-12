@@ -1554,7 +1554,59 @@ local guiRefs = {}
 
 -- Feature functions reused by GUI callbacks
 
--- Infinite Stamina logic
+-- Anim Ids
+local autoBlockTriggerAnims = {
+    "126830014841198", "126355327951215", "121086746534252", "18885909645",
+    "98456918873918", "105458270463374", "83829782357897", "125403313786645",
+    "118298475669935", "82113744478546", "70371667919898", "99135633258223",
+    "97167027849946", "109230267448394", "139835501033932", "126896426760253",
+    "109667959938617", "126681776859538", "129976080405072", "121293883585738",
+    "81639435858902", "137314737492715",
+    "92173139187970"
+}
+
+-- State Variables
+local autoBlockOn = false
+local strictRangeOn = false
+local looseFacing = true
+local detectionRange = 18
+
+local predictiveBlockOn = false
+local detectionRange = 10
+local edgeKillerDelay = 3
+local killerInRangeSince = nil
+local predictiveCooldown = 0
+
+local autoPunchOn = false
+local flingPunchOn = false
+local flingPower = 10000
+local hiddenfling = false
+local aimPunch = false
+
+local customBlockEnabled = false
+local customBlockAnimId = ""
+local customPunchEnabled = false
+local customPunchAnimId = ""
+
+local infiniteStamina = false
+
+local lastBlockTime = 0
+local lastPunchTime = 0
+local lastBlockTpTime = 0
+
+local blockAnimIds = {
+"72722244508749",
+"96959123077498"
+}
+local punchAnimIds = {
+"87259391926321"
+}
+
+local customChargeEnabled = false
+local customChargeAnimId = ""
+local chargeAnimIds = { "106014898528300" }
+
+-- Infinite Stamina
 local function enableInfiniteStamina()
     local success, StaminaModule = pcall(function()
         return require(game.ReplicatedStorage.Systems.Character.Game.Sprinting)
@@ -1571,6 +1623,7 @@ local function enableInfiniteStamina()
         end
     end)
 end
+
 -- Goon animation
 local function startGoon()
     local player = Players.LocalPlayer
@@ -2535,127 +2588,93 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-RunService.Heartbeat:Connect(function()
-	if not hitboxmodificationEnabled then return end
-	if not HumanoidRootPart then return end
+-- Helpers
+local function fireRemoteBlock()
+local args = {"UseActorAbility", "Block"}
+ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("RemoteEvent"):FireServer(unpack(args))
+end
 
-	local playing = false
-	for _, track in ipairs(Humanoid:GetPlayingAnimationTracks()) do
-		if table.find(AttackAnimations, track.Animation.AnimationId)
-			and (track.TimePosition / track.Length < 0.75) then
-			playing = true
-			break
-		end
-	end
+local function isFacing(localRoot, targetRoot)
+    if not facingCheckEnabled then
+        return true
+    end
 
-	if not playing then return end
+    local dir = (localRoot.Position - targetRoot.Position).Unit
+    local dot = targetRoot.CFrame.LookVector:Dot(dir)
+    return looseFacing and dot > -0.3 or dot > 0
+end
 
-	local Target
-	local NearestDist = MaxRange
+local function playCustomAnim(animId, isPunch)
+    if not Humanoid then
+        warn("Humanoid missing")
+        return
+    end
 
-	local function scanGroup(group)
-		for _, obj in ipairs(group) do
-			if obj == Character or not obj:FindFirstChild("HumanoidRootPart") then continue end
-			local dist = (obj.HumanoidRootPart.Position - HumanoidRootPart.Position).Magnitude
-			if dist < NearestDist then
-				NearestDist = dist
-				Target = obj
-			end
-		end
-	end
+    if not animId or animId == "" then
+        warn("No animation ID provided")
+        return
+    end
 
-	scanGroup(workspace.Players:GetDescendants())
-	local npcs = workspace:FindFirstChild("Map", true) and workspace.Map:FindFirstChild("NPCs", true)
-	if npcs then
-		scanGroup(npcs:GetChildren())
-	end
+    local now = tick()
+    local lastTime = isPunch and lastPunchTime or lastBlockTime
+    if now - lastTime < 1 then
+        return
+    end
 
-	if not Target then return end
-
-	local ping = LocalPlayer:GetNetworkPing()
-	local randomOffset = Vector3.new(RNG:NextNumber(-1.5, 1.5), 0, RNG:NextNumber(-1.5, 1.5))
-	local predicted = Target.HumanoidRootPart.Position + randomOffset + (Target.HumanoidRootPart.Velocity * (ping * 1.25))
-	local neededVelocity = (predicted - HumanoidRootPart.Position) / (ping * 2)
-
-	local oldVelocity = HumanoidRootPart.Velocity
-	HumanoidRootPart.Velocity = neededVelocity
-	RunService.RenderStepped:Wait()
-	HumanoidRootPart.Velocity = oldVelocity
-end)
-
-RunService.Heartbeat:Connect(function()
-	if PlayersFolder and not ESP.Enabled then
-  		for _, obj in ipairs(PlayersFolder:GetDescendants()) do
-          	if obj.Name == "PlayerESPBillboard" then
-            	obj:Destroy()
-            end
+    -- Stop other known anims
+    for _, track in ipairs(Humanoid:GetPlayingAnimationTracks()) do
+        local animNum = tostring(track.Animation.AnimationId):match("%d+")
+        if table.find(isPunch and punchAnimIds or blockAnimIds, animNum) then
+            track:Stop()
         end
     end
-end)
 
-local lastReplaceTime = {
-    block = 0,
-    punch = 0,
-    charge = 0,
-}
+    -- Create and load the animation
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://" .. animId
 
--- Continuous custom animation replacer (runs forever if toggled on)
-task.spawn(function()
+    local success, track = pcall(function()
+        return Humanoid:LoadAnimation(anim)
+    end)
+
+    if success and track then
+        print("✅ Playing custom " .. (isPunch and "punch" or "block") .. " animation:", animId)
+        track:Play()
+        if isPunch then
+            lastPunchTime = now
+        else
+            lastBlockTime = now
+        end
+    else
+        warn("❌ Failed to load or play custom animation: " .. animId)
+    end
+end
+
+-- Fling coroutine
+coroutine.wrap(function()
+    local hrp, c, vel, movel = nil, nil, nil, 0.1
     while true do
         RunService.Heartbeat:Wait()
-
-        local char = lp.Character
-        if not char then continue end
-
-        local humanoid = char:FindFirstChildOfClass("Humanoid")
-        local animator = humanoid and humanoid:FindFirstChildOfClass("Animator")
-        if not animator then continue end
-
-        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
-            local animId = tostring(track.Animation.AnimationId):match("%d+")
-
-            -- Block animation replacement
-            if customBlockEnabled and customBlockAnimId ~= "" and table.find(blockAnimIds, animId) then
-                if tick() - lastReplaceTime.block >= 3 then
-                    lastReplaceTime.block = tick()
-                    track:Stop()
-                    local newAnim = Instance.new("Animation")
-                    newAnim.AnimationId = "rbxassetid://" .. customBlockAnimId
-                    local newTrack = animator:LoadAnimation(newAnim)
-                    newTrack:Play()
-                    break
-                end
+        if hiddenfling then
+            while hiddenfling and not (c and c.Parent and hrp and hrp.Parent) do
+                RunService.Heartbeat:Wait()
+                c = lp.Character
+                hrp = c and c:FindFirstChild("HumanoidRootPart")
             end
-
-            -- Punch animation replacement
-            if customPunchEnabled and customPunchAnimId ~= "" and table.find(punchAnimIds, animId) then
-                if tick() - lastReplaceTime.punch >= 3 then
-                    lastReplaceTime.punch = tick()
-                    track:Stop()
-                    local newAnim = Instance.new("Animation")
-                    newAnim.AnimationId = "rbxassetid://" .. customPunchAnimId
-                    local newTrack = animator:LoadAnimation(newAnim)
-                    newTrack:Play()
-                    break
-                end
-            end
-
-            -- Charge animation replacement
-            if customChargeEnabled and customChargeAnimId ~= "" and table.find(chargeAnimIds, animId) then
-                if tick() - lastReplaceTime.charge >= 3 then
-                    lastReplaceTime.charge = tick()
-                    track:Stop()
-                    local newAnim = Instance.new("Animation")
-                    newAnim.AnimationId = "rbxassetid://" .. customChargeAnimId
-                    local newTrack = animator:LoadAnimation(newAnim)
-                    newTrack:Play()
-                    break
-                end
+            if hiddenfling then
+                vel = hrp.Velocity
+                hrp.Velocity = vel * flingPower + Vector3.new(0, flingPower, 0)
+                RunService.RenderStepped:Wait()
+                hrp.Velocity = vel
+                RunService.Stepped:Wait()
+                hrp.Velocity = vel + Vector3.new(0, movel, 0)
+                movel = movel * -1
             end
         end
     end
-end)
+end)()
 
+-- Auto block + punch detection loop
 RunService.RenderStepped:Connect(function()
     local myChar = lp.Character
     if not myChar then return end
