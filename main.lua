@@ -17,6 +17,7 @@ local AntiSlow = false
 local hubLoaded = false
 local timeforonegen = 2.5
 local autofixgenerator = false
+local infinitestamina
 -- Throttled task runner
 local function runEvery(interval, fn)
     task.spawn(function()
@@ -1786,19 +1787,6 @@ local punchAnimIds = {
 local customChargeEnabled = false
 local customChargeAnimId = ""
 local chargeAnimIds = { "106014898528300" }
--- Infinite Stamina
-local function enableInfiniteStamina(state)
-    isitinfiniteStamina = state
-	if not requireSupported then
-    	Fluent:Notify({
-        	Title = "Error",
-            Content = "Your executor doesn't support Infinite Stamina.",
-            Duration = 5,
-            Image = "ban",
-        })
-		return
-	end
-end
 
 -- Goon animation
 local function startGoon()
@@ -2379,7 +2367,7 @@ if FluentLoaded then
         Title = "Infinite Stamina (ONLY WORKS ON SOME EXECUTORS)",
         Default = false,
         Callback = function(value)
-            enableInfiniteStamina(value)
+            infinitestamina = value
         end
     })
 	
@@ -3327,7 +3315,7 @@ RunService.Heartbeat:Connect(function()
 end)
 
 RunService.Stepped:Connect(function()
-	if isitInfiniteStamina then
+	if infinitestamina then
 		local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
 		local stamina = require(Sprinting)
 		stamina.StaminaLossDisabled = true
@@ -3337,3 +3325,4 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = false
 	end
 end)
+
