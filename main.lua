@@ -3314,12 +3314,9 @@ imageButton.Parent = buttonFrame
 
 -- Function to toggle Goonsaken Hub GUI frame visibility
 local function toggleGoonsakenHub()
-    local screenGui = game:GetService("CoreGui"):FindFirstChild("ScreenGui")
-    if screenGui then
-        screenGui.Enabled = not screenGui.Enabled
-    else
-        warn("ScreenGui not found in CoreGui")
-    end
+	VIM:SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
+	task.wait(0.1)
+	VIM:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
 end
 
 
@@ -3339,4 +3336,5 @@ RunService.Heartbeat:Connect(function()
 		triggerNearestGenerator()
 	end
 end)
+
 
