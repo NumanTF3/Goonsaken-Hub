@@ -2471,7 +2471,7 @@ if FluentLoaded then
     ]]--
 
     Tabs.Misc:AddKeybind("KillerEmoteKeybind", {
-        Title = "Emote as Killer",
+        Title = "Emote as Killer (Credit to Fartsaken)",
         Mode = "Always",
         Default = "L",
         Callback = function()
@@ -3349,5 +3349,6 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = false
 	end
 end)
+
 
 
