@@ -2142,6 +2142,17 @@ if FluentLoaded then
         end
     })
 
+	Tabs.Player:AddSlider("ChancePredic", {
+        Title = "Chance Aimbot Prediction Value",
+        Default = 0.2,
+        Min = 0.1,
+        Max = 3,
+        Rounding = 2,
+        Callback = function(value)
+			timeAhead = value
+        end
+    })
+
     Tabs.Player:AddButton({
         Title = "Ultra Instinct (auto dodge killer)",
         Callback = function()
@@ -3179,3 +3190,4 @@ while task.wait(0.03) do
 end
 
 SaveManager:LoadAutoloadConfig()
+
