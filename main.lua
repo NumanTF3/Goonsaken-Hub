@@ -1800,29 +1800,29 @@ local function enableInfiniteStamina(state)
         })
 		return
 	end
-    
-    -- Check if the module even exists
-    local sprintModule = game.ReplicatedStorage:FindFirstChild("Systems")
-        and game.ReplicatedStorage.Systems:FindFirstChild("Character")
-        and game.ReplicatedStorage.Systems.Character:FindFirstChild("Game")
-        and game.ReplicatedStorage.Systems.Character.Game:FindFirstChild("Sprinting")
+	local loopConnection
+	loopConnection = RunService.Heartbeat:Connect(function()
+    	if not isitInfiniteStamina then
+    	    loopConnection:Disconnect()
+			local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
+			local stamina = require(Sprinting)
+			stamina.MaxStamina = 100  -- Maximum stamina
+			stamina.MinStamina = 0  -- Minimum stamina
+			stamina.StaminaGain = 20 -- Stamina gain
+			stamina.StaminaLoss = 10 -- Stamina loss	
+			stamina.SprintSpeed = 26 -- Sprint speed
+			stamina.StaminaLossDisabled = false -- Disable stamina drain (true/false)
+    	    return
+    	end
 
-    local success, StaminaModule = pcall(function()
-        return require(sprintModule)
-    end)
-
-    -- Heartbeat loop
-    local connection
-    connection = game:GetService("RunService").Heartbeat:Connect(function()
-        if not isitinfiniteStamina then
-            connection:Disconnect()
-            if type(StaminaModule.StaminaLossDisabled) ~= "function" then
-                StaminaModule.StaminaLossDisabled = false
-            end
-            return
-        end
-        StaminaModule.StaminaLossDisabled = function() end
-    end)
+    	local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
+		local stamina = require(Sprinting)
+		stamina.MaxStamina = 100  -- Maximum stamina
+		stamina.MinStamina = -20  -- Minimum stamina
+		stamina.StaminaGain = 100 -- Stamina gain
+		stamina.StaminaLoss = 5 -- Stamina loss	
+		stamina.SprintSpeed = 40 -- Sprint speed
+		stamina.StaminaLossDisabled = true -- Disable stamina drain (true/false)
 end
 
 -- Goon animation
