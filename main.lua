@@ -2092,7 +2092,7 @@ local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
-    	SubTitle = "v3.0.1",
+    	SubTitle = "v3.0.3",
     	TabWidth = 160,
     	Size = UDim2.fromOffset(580, 460),
     	Theme = "Dark",
@@ -2481,6 +2481,119 @@ if FluentLoaded then
             end
         end
     })
+
+    Tabs.Misc:AddToggle("SettingsVideo", {
+		Title = "ONE MORE GAME! when you pause the game",
+		Default = false,
+		Callback = function(state)
+			if state then
+				-- === Config ===
+				local folderPath = "GoonsakenHub/Assets"
+				local fileName = "onemoregame.webm"
+				local fullPath = folderPath .. "/" .. fileName
+				local videoUrl = "https://raw.githubusercontent.com/NumanTF3/Goonsaken-Hub/refs/heads/main/onemoregame.webm"
+
+				-- Ensure folder exists
+				if not isfolder("GoonsakenHub") then makefolder("GoonsakenHub") end
+				if not isfolder(folderPath) then makefolder(folderPath) end
+
+				-- Download if missing
+				if not isfile(fullPath) then
+					Fluent:Notify({
+						Title = "Video Loader",
+						Content = "Downloading video asset...",
+						Duration = 5
+					})
+
+					local request = (syn and syn.request) or http_request or request
+					if not request then error("Executor does not support HTTP requests.") end
+
+					local response = request({
+						Url = videoUrl,
+						Method = "GET"
+					})
+
+					if response.Success and response.Body then
+						writefile(fullPath, response.Body)
+						Fluent:Notify({
+							Title = "Video Loader",
+							Content = "Video downloaded successfully!",
+							Duration = 5
+						})
+					else
+						Fluent:Notify({
+							Title = "Video Loader",
+							Content = "Failed to download video.",
+							Duration = 5
+						})
+						return
+					end
+				else
+					Fluent:Notify({
+						Title = "Video Loader",
+						Content = "Using cached video.",
+						Duration = 5
+					})
+				end
+
+				-- Asset for VideoFrame
+				local videoAsset = getcustomasset(fullPath)
+				local CoreGui = game:GetService("CoreGui")
+				local SettingsShield = CoreGui:WaitForChild("RobloxGui")
+					:WaitForChild("SettingsClippingShield")
+					:WaitForChild("SettingsShield")
+
+				local videoGui
+
+				local function createVideo()
+					if videoGui then return end
+					videoGui = Instance.new("ScreenGui")
+					videoGui.IgnoreGuiInset = true
+					videoGui.ResetOnSpawn = false
+					videoGui.Parent = PlayerGui
+
+					local videoFrame = Instance.new("VideoFrame", videoGui)
+					videoFrame.Name = "BackVideo"
+					videoFrame.Size = UDim2.new(1, 0, 1, 0)
+					videoFrame.Position = UDim2.new(0, 0, 0, 0)
+					videoFrame.BackgroundTransparency = 1
+					videoFrame.Video = videoAsset
+					videoFrame.Looped = true
+					videoFrame.Volume = 3
+					videoFrame:Play()
+				end
+
+				local function removeVideo()
+					if videoGui then
+						videoGui:Destroy()
+						videoGui = nil
+					end
+				end
+
+				-- Monitor
+				_G.SettingsVideoLoop = task.spawn(function()
+					local wasVisible = SettingsShield.Visible
+					while state do
+						local isVisible = SettingsShield.Visible
+						if isVisible and not wasVisible then
+							createVideo()
+						elseif not isVisible and wasVisible then
+							removeVideo()
+						end
+						wasVisible = isVisible
+						task.wait(0.1)
+					end
+					removeVideo()
+				end)
+
+			else
+				if _G.SettingsVideoLoop then
+					task.cancel(_G.SettingsVideoLoop)
+					_G.SettingsVideoLoop = nil
+				end
+			end
+		end
+	})
 
     Tabs.Misc:AddInput("PlaySoundByID", {
         Title = "Play Sound by ID",
