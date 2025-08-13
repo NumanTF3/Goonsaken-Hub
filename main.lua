@@ -2068,7 +2068,7 @@ local function createFrontflip()
     end
 end
 
-local frontflipObj = createFrontflip()()
+local frontflipObj = create()()
 
 -- Active UI references
 local FluentLoaded = false
@@ -2231,7 +2231,7 @@ if FluentLoaded then
     })
 
     Tabs.Player:AddButton({
-        Title = "Frontflip (Key: F)",
+        Title = "Frontflip (Key: F) (Credit to Fartsaken)",
         Callback = function()
             if frontflipObj and frontflipObj.Flip then
                 frontflipObj.Flip()
@@ -2326,7 +2326,7 @@ if FluentLoaded then
     })
 
     Tabs.Player:AddToggle("HitboxModifier", {
-        Title = "Hitbox Modifier",
+        Title = "Hitbox Modifier (Credit to IYRE Reach Script)",
         Default = false,
         Callback = function(Value)
             hitboxmodificationEnabled = Value
@@ -3349,4 +3349,5 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = false
 	end
 end)
+
 
