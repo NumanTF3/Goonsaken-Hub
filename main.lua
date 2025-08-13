@@ -17,6 +17,27 @@ local AntiSlow = false
 local hubLoaded = false
 local timeforonegen = 2.5
 local autofixgenerator = false
+-- Throttled task runner
+local function runEvery(interval, fn)
+    task.spawn(function()
+        while true do
+            local ok, err = pcall(fn)
+            if not ok then warn("[runEvery]", err) end
+            task.wait(interval)
+        end
+    end)
+end
+
+-- Simple connection bucket so we can clean up safely if needed
+local Connections = {}
+local function track(conn) table.insert(Connections, conn); return conn end
+local function disconnectAll()
+    for i, c in ipairs(Connections) do
+        if c and c.Disconnect then pcall(function() c:Disconnect() end) end
+        Connections[i] = nil
+    end
+end
+
 
 local executor = getgenv().identifyexecutor and getgenv().identifyexecutor() or "RobloxClientApp"
 
@@ -119,37 +140,25 @@ local function checkAndSetSlowStatus()
     end
 end
 
-local function Do1x1x1x1Popups()
-	while true do
-		if Do1x1PopupsLoop then
-			local player = game:GetService("Players").LocalPlayer
-			local popups = player.PlayerGui.TemporaryUI:GetChildren()
-			
-			for _, i in ipairs(popups) do
-				if i.Name == "1x1x1x1Popup" then
-					local centerX = i.AbsolutePosition.X + (i.AbsoluteSize.X / 2)
-					local centerY = i.AbsolutePosition.Y + (i.AbsoluteSize.Y / 2) + 50
-					VIM:SendMouseButtonEvent(
-						centerX,
-						centerY,
-						Enum.UserInputType.MouseButton1.Value,
-						true,
-						player.PlayerGui,
-						1
-					)
-					VIM:SendMouseButtonEvent(
-						centerX,
-						centerY,
-						Enum.UserInputType.MouseButton1.Value,
-						false,
-						player.PlayerGui,
-						1
-					)
-				end
-			end
-		end
-		task.wait(0.1)
-	end
+-- VirtualInputManager once (it was used but never defined)
+local VIM = game:GetService("VirtualInputManager")
+
+function Do1x1x1x1Popups()
+    runEvery(0.5, function()
+        if not Do1x1PopupsLoop then return end
+        local player = Players.LocalPlayer
+        local tempUI = player:FindFirstChild("PlayerGui") and player.PlayerGui:FindFirstChild("TemporaryUI")
+        if not tempUI then return end
+
+        for _, gui in ipairs(tempUI:GetChildren()) do
+            if gui.Name == "1x1x1x1Popup" and gui:IsA("GuiObject") then
+                local cx = gui.AbsolutePosition.X + (gui.AbsoluteSize.X / 2)
+                local cy = gui.AbsolutePosition.Y + (gui.AbsoluteSize.Y / 2) + 50
+                VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, true, player.PlayerGui, 1)
+                VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, false, player.PlayerGui, 1)
+            end
+        end
+    end)
 end
 
 local existence
@@ -1235,26 +1244,22 @@ local function findNearestGenerator()
 end
 
 local function triggerNearestGenerator()
-	local PuzzleUI = Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("PuzzleUI", 9999)
+    local gui = Players.LocalPlayer:FindFirstChild("PlayerGui")
+    if gui then gui:WaitForChild("PuzzleUI", 9999) end
+
     local gen = findNearestGenerator()
-    if gen and gen:FindFirstChild("Remotes") and gen.Remotes:FindFirstChild("RE") then
-        
-        local conn
-        conn = RunService.Heartbeat:Connect(function()
-            if gen.Progress.Value >= 100 then
-                conn:Disconnect()
-                return
-            end
-            task.wait(timeforonegen)
-            gen.Remotes.RE:FireServer()
-        end)
-
-        print("Triggered generator:", gen.Name)
-    else
-        print("No generator or remote found!")
+    if not gen or not gen:FindFirstChild("Remotes") or not gen.Remotes:FindFirstChild("RE") then
+        warn("No generator or remote found!")
+        return
     end
-end
 
+    task.spawn(function()
+        while gen and gen.Parent and gen:FindFirstChild("Progress") and gen.Progress.Value < 100 do
+            task.wait(timeforonegen)
+			gen.Remotes.RE:FireServer()
+        end
+    end)
+end
 
 -- Enable aimbot function
 local function enableAimbot()
@@ -1503,23 +1508,23 @@ local function trackGenerator(generator)
     end)
 end
 
--- Main loops (preserved)
-RunService.Heartbeat:Connect(function()
+runEvery(0.5, function()
     local survivors = PlayersFolder:FindFirstChild("Survivors")
-    local killers = PlayersFolder:FindFirstChild("Killers")
     if survivors then
         for _, char in ipairs(survivors:GetChildren()) do
             applyPlayerESP(char, COLOR_SURVIVOR)
         end
     end
 
+    local killers = PlayersFolder:FindFirstChild("Killers")
     if killers then
         for _, char in ipairs(killers:GetChildren()) do
             applyPlayerESP(char, COLOR_KILLER)
         end
     end
 
-	applyTrapsandSpikesESP(COLOR_TRAPSANDSPIKES)
+    -- This one used to scan the entire map each frame — now every 0.5s
+    applyTrapsandSpikesESP(COLOR_TRAPSANDSPIKES)
 end)
 
 -- Item ESP initial scan
@@ -1528,39 +1533,41 @@ for _, tool in ipairs(Workspace:GetDescendants()) do
 end
 
 -- Item ESP listen for new tools
-Workspace.DescendantAdded:Connect(function(descendant)
-    highlightToolIfNeeded(descendant)
+task.spawn(function()
+    task.wait(0.5)
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        highlightToolIfNeeded(obj)
+    end
 end)
 
+track(Workspace.DescendantAdded:Connect(highlightToolIfNeeded))
+
 -- Generator ESP loop (preserved)
-RunService.Heartbeat:Connect(function()
-    coroutine.wrap(function()
-        local mapContainer
-        -- maintain chat window behaviour from original
-        local ok, textChat = pcall(function() return game:GetService("TextChatService") end)
-        if ok and textChat and textChat.ChatWindowConfiguration then
-            textChat.ChatWindowConfiguration.Enabled = true
+-- Find map once (with retries), then track generators, plus a 0.5s poll for *new* generators
+task.spawn(function()
+    local mapContainer
+    repeat
+        local mapRoot = Workspace:FindFirstChild("Map")
+        local ingame = mapRoot and mapRoot:FindFirstChild("Ingame")
+        mapContainer = ingame and ingame:FindFirstChild("Map")
+        task.wait(0.5)
+    until mapContainer
+
+    -- initial pass
+    for _, gen in ipairs(mapContainer:GetChildren()) do
+        if gen.Name == "Generator" and gen:IsA("Model") then
+            trackGenerator(gen)  -- your existing function (it adds/removes a Highlight and binds to Progress)
         end
+    end
 
-        repeat
-            mapContainer = Workspace:FindFirstChild("Map")
-            if mapContainer then
-                mapContainer = mapContainer:FindFirstChild("Ingame")
-                if mapContainer then
-                    mapContainer = mapContainer:FindFirstChild("Map")
-                end
-            end
-            task.wait(1)
-        until mapContainer
-
-        task.wait(1)
-
+    -- watch for new generators appearing in-session (throttled)
+    runEvery(0.5, function()
         for _, gen in ipairs(mapContainer:GetChildren()) do
-            if gen.Name == "Generator" and gen:IsA("Model") then
+            if gen.Name == "Generator" and gen:IsA("Model") and not gen:FindFirstChild(GENERATOR_ESP_NAME) then
                 trackGenerator(gen)
             end
         end
-    end)()
+    end)
 end)
 
 -- Function to toggle ESP on/off
@@ -1786,7 +1793,7 @@ local punchAnimIds = {
 local customChargeEnabled = false
 local customChargeAnimId = ""
 local chargeAnimIds = { "106014898528300" }
-
+--[[
 -- Infinite Stamina
 local function enableInfiniteStamina(state)
     isitinfiniteStamina = state
@@ -1800,6 +1807,7 @@ local function enableInfiniteStamina(state)
 		return
 	end
 end
+]]--
 
 -- Goon animation
 local function startGoon()
@@ -2375,7 +2383,8 @@ if FluentLoaded then
             end
         end
     })
-
+	
+	--[[
     Tabs.Game:AddToggle("InfiniteStamina", {
         Title = "Infinite Stamina",
         Default = false,
@@ -2383,7 +2392,8 @@ if FluentLoaded then
             enableInfiniteStamina(value)
         end
     })
-
+	]]--
+	
     -- Auto Rejoin on Kick (default ON)
     Tabs.Game:AddToggle("AutoRejoinToggle", {
         Title = "Auto Rejoin on Kick",
@@ -3325,25 +3335,8 @@ end
 SaveManager:LoadAutoloadConfig()
 
 RunService.Heartbeat:Connect(function()
-	if isitinfiniteStamina then
-    	local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
-		local stamina = require(Sprinting)
-		stamina.MaxStamina = 100  -- Maximum stamina
-		stamina.MinStamina = -20  -- Minimum stamina
-		stamina.StaminaGain = 100 -- Stamina gain
-		stamina.StaminaLoss = 5 -- Stamina loss	
-		stamina.SprintSpeed = 40 -- Sprint speed
-		stamina.StaminaLossDisabled = true -- Disable stamina drain (true/false)
-	else
-		local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
-		local stamina = require(Sprinting)
-		stamina.MaxStamina = 100  -- Maximum stamina
-		stamina.MinStamina = 0  -- Minimum stamina
-		stamina.StaminaGain = 20 -- Stamina gain
-		stamina.StaminaLoss = 10 -- Stamina loss	
-		stamina.SprintSpeed = 26 -- Sprint speed
-	end
 	if autofixgenerator == true then
 		triggerNearestGenerator()
 	end
 end)
+
