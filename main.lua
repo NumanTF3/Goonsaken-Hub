@@ -1313,7 +1313,7 @@ local allHighlights = {}
 
 local function setHighlightVisibility(highlight, visible)
     if visible then
-        highlight.FillTransparency = 0.5
+        highlight.FillTransparency = 0.8
         highlight.OutlineTransparency = 0
     else
         highlight.FillTransparency = 1
@@ -1350,7 +1350,7 @@ local function applyTrapsandSpikesESP(color)
             hl.FillColor = color or Color3.fromRGB(255, 0, 0) -- default bright red
             hl.OutlineColor = Color3.fromRGB(255, 255, 255)
             hl.OutlineTransparency = 0
-            hl.FillTransparency = 0.5
+            hl.FillTransparency = 0.8
             hl.Adornee = target
             hl.Parent = target
 
@@ -3349,6 +3349,7 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = false
 	end
 end)
+
 
 
 
