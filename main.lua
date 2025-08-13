@@ -2092,7 +2092,7 @@ local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
-    	SubTitle = "v3.0.2",
+    	SubTitle = "v3.0.1",
     	TabWidth = 160,
     	Size = UDim2.fromOffset(580, 460),
     	Theme = "Dark",
@@ -2283,6 +2283,12 @@ if FluentLoaded then
     Tabs.Player:AddButton({
         Title = "Auto Two Time Backstab and Aimbot",
         Callback = function()
+			setclipboard("https://discord.gg/ETTV2g8kxS")
+			Fluent:Notify({
+    			Title = "TwoTime Auto Backstab",
+    			Content = "Made by skibisaken. Discord link copied to clipboard!",
+    			Duration = 8
+			})
             loadstring(game:HttpGet('https://raw.githubusercontent.com/NumanTF3/two-time-backstab/refs/heads/main/main.lua'))()
         end
     })
@@ -3338,4 +3344,3 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = false
 	end
 end)
-
