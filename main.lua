@@ -3428,9 +3428,9 @@ imageButton.Parent = buttonFrame
 
 -- Function to toggle Goonsaken Hub GUI frame visibility
 local function toggleGoonsakenHub()
-	VIM:SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
+	VIM:SendKeyEvent(true, Enum.KeyCode.L, false, game)
 	task.wait(0.1)
-	VIM:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
+	VIM:SendKeyEvent(false, Enum.KeyCode.L, false, game)
 end
 
 
@@ -3462,3 +3462,4 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = false
 	end
 end)
+
