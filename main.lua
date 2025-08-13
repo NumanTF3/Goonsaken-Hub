@@ -2084,7 +2084,7 @@ if RayfieldLoaded then
     PlayerTab:CreateButton({
         Name = "Auto Two Time Backstab and Aimbot",
         Callback = function()
-            loadstring(game:HttpGet('https://github.com/NumanTF3/two-time-backstab/blob/main/main.lua'))()
+            loadstring(game:HttpGet('https://raw.githubusercontent.com/NumanTF3/two-time-backstab/refs/heads/main/main.lua'))()
         end
     })
 
@@ -3051,4 +3051,5 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function()
         enableInfiniteStamina()
     end
 end)
+
 
