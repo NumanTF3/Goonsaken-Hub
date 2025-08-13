@@ -54,13 +54,6 @@ local function checkRequireSupport()
     dummyModule:Destroy()
 end
 
-if executor == "Xeno" then
-	requireSupported = false
-else
-	requireSupported = true
-end
-
-
 local function fireproximityprompt(Obj, Amount, Skip)
     if Obj.ClassName == "ProximityPrompt" then 
         Amount = Amount or 1
@@ -1793,7 +1786,6 @@ local punchAnimIds = {
 local customChargeEnabled = false
 local customChargeAnimId = ""
 local chargeAnimIds = { "106014898528300" }
---[[
 -- Infinite Stamina
 local function enableInfiniteStamina(state)
     isitinfiniteStamina = state
@@ -1807,7 +1799,6 @@ local function enableInfiniteStamina(state)
 		return
 	end
 end
-]]--
 
 -- Goon animation
 local function startGoon()
@@ -2384,15 +2375,13 @@ if FluentLoaded then
         end
     })
 	
-	--[[
     Tabs.Game:AddToggle("InfiniteStamina", {
-        Title = "Infinite Stamina",
+        Title = "Infinite Stamina (ONLY WORKS ON SOME EXECUTORS)",
         Default = false,
         Callback = function(value)
             enableInfiniteStamina(value)
         end
     })
-	]]--
 	
     -- Auto Rejoin on Kick (default ON)
     Tabs.Game:AddToggle("AutoRejoinToggle", {
@@ -3337,4 +3326,14 @@ RunService.Heartbeat:Connect(function()
 	end
 end)
 
-
+RunService.Stepped:Connect(function()
+	if isitInfiniteStamina then
+		local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
+		local stamina = require(Sprinting)
+		stamina.StaminaLossDisabled = true
+	else
+		local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
+		local stamina = require(Sprinting)
+		stamina.StaminaLossDisabled = false
+	end
+end)
