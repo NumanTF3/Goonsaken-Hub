@@ -2368,8 +2368,21 @@ if FluentLoaded then
         Default = false,
         Callback = function(value)
             infinitestamina = value
-        end
-    })
+			task.spawn(function()
+            	while infinitestamina do
+            	    local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
+            	    local stamina = require(Sprinting)
+            	    stamina.StaminaLossDisabled = true
+            	    task.wait(0.5) -- adjust to avoid unnecessary performance hit
+            	end
+
+	            -- Restore default when turned off
+    	        local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
+    	        local stamina = require(Sprinting)
+    	        stamina.StaminaLossDisabled = false
+    	    end)
+    	end
+	})
 	
     -- Auto Rejoin on Kick (default ON)
     Tabs.Game:AddToggle("AutoRejoinToggle", {
@@ -3325,4 +3338,3 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = false
 	end
 end)
-
