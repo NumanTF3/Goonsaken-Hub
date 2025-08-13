@@ -14,6 +14,56 @@ local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local Do1x1PopupsLoop = false
 local nameprotectEnabled = false
 local AntiSlow = false
+local hubLoaded = false
+
+local executor = getgenv().identifyexecutor and getgenv().identifyexecutor() or "RobloxClientApp"
+
+local function checkRequireSupport()
+    local dummyModule = Instance.new("ModuleScript")
+    dummyModule.Source = "return true"
+	dummyModule.Parent = game:GetService("ReplicatedStorage")
+    
+    local success, result = pcall(function()
+        return require(dummyModule)
+    end)
+
+    requireSupported = success and result == true
+    dummyModule:Destroy()
+end
+
+checkRequireSupport()
+print("your executor require support is: " .. tostring(requireSupported))
+
+local function fireproximityprompt(Obj, Amount, Skip)
+    if Obj.ClassName == "ProximityPrompt" then 
+        Amount = Amount or 1
+        local PromptTime = Obj.HoldDuration
+        if Skip then 
+            Obj.HoldDuration = 0
+        end
+        for i = 1, Amount do 
+            Obj:InputHoldBegin()
+            if not Skip then 
+                wait(Obj.HoldDuration)
+            end
+            Obj:InputHoldEnd()
+        end
+        Obj.HoldDuration = PromptTime
+    else 
+        error("userdata<ProximityPrompt> expected")
+    end
+end
+
+local function firetouchinterest(totouch, whattotouchwith,nilvalue)
+    pcall(function()
+        local clone = totouch:Clone()
+        local orgpos = totouch.CFrame
+        totouch.CFrame = whattotouchwith.CFrame
+        wait(0.5)
+        totouch.CFrame = orgpos
+        clone:Destroy()
+    end)
+end
 
 LocalPlayer.CharacterAdded:Connect(function(char)
 	Character = char
@@ -27,7 +77,8 @@ local function checkAndSetSlowStatus()
         return
     end
 
-    local character = Humanoid.Parent
+	local character = LocalPlayer.Character
+	local Humanoid = Character:WaitForChild("Humanoid")
     if not character then return end
 
     local speedMultipliers = character:FindFirstChild("SpeedMultipliers")
@@ -55,7 +106,7 @@ local function checkAndSetSlowStatus()
             if statusContainer then
                 local slownessUI = statusContainer:FindFirstChild("Slowness")
                 if slownessUI then
-                    slownessUI:Destroy()
+                    slownessUI.Visible = false
                 end
             end
         end
@@ -98,7 +149,7 @@ end
 local existence
 local animTrack
 local running = false
-local timebetweenpuzzles = 3.5
+local timebetweenpuzzles = 3
 
 local MaxRange = 120
 local hitboxmodificationEnabled = false
@@ -1136,6 +1187,7 @@ ESP.Enabled = false
 local PLAYER_ESP_NAME = "PlayerESP"
 local ITEM_ESP_NAME = "ToolESPHighlight"
 local GENERATOR_ESP_NAME = "GeneratorESP"
+local TRAPSANDSPIKES_ESP_NAME = "TrapsandSpikesESP"
 
 local aimbotConnection
 
@@ -1250,6 +1302,7 @@ end
 
 local COLOR_SURVIVOR = Color3.fromRGB(0, 255, 0)
 local COLOR_KILLER = Color3.fromRGB(255, 0, 0)
+local COLOR_TRAPSANDSPIKES = Color3.fromRGB(255, 0, 0)
 local COLOR_MEDKIT = Color3.fromRGB(0, 255, 0)
 local COLOR_COLA = Color3.fromRGB(0, 150, 255)
 local COLOR_GENERATOR = Color3.fromRGB(255, 255, 0)
@@ -1270,6 +1323,78 @@ end
 -- Player ESP
 local PlayersFolder = Workspace:WaitForChild("Players")
 
+local function applyTrapsandSpikesESP(color)
+    local ingameFolder = workspace:FindFirstChild("Map") 
+        and workspace.Map:FindFirstChild("Ingame")
+    if not ingameFolder then
+        warn("Ingame folder not found in Workspace.Map")
+        return
+    end
+
+    -- Recursive function to search inside a model for a part named "Hook1"
+    local function hasHook1(obj)
+        for _, child in ipairs(obj:GetDescendants()) do
+            if child:IsA("BasePart") and child.Name == "Hook1" then
+                return true
+            end
+        end
+        return false
+    end
+
+    -- Function to create a unique highlight if it doesn't already exist
+    local function ensureHighlight(target)
+        if not target:FindFirstChild("TrapsandSpikesESP") then
+            local hl = Instance.new("Highlight")
+            hl.Name = TRAPSANDSPIKES_ESP_NAME
+            hl.FillColor = color or Color3.fromRGB(255, 0, 0) -- default bright red
+            hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+            hl.OutlineTransparency = 0
+            hl.FillTransparency = 0.5
+            hl.Adornee = target
+            hl.Parent = target
+
+            -- Add to global highlights table
+            allHighlights[hl] = true
+        end
+    end
+
+    -- Scan through all descendants in Ingame
+    for _, obj in ipairs(ingameFolder:GetDescendants()) do
+        if obj:IsA("Model") or obj:IsA("BasePart") then
+            if obj.Name == "Spike" or obj.Name == "SubspaceTripmine" then
+                ensureHighlight(obj)
+
+            elseif obj.Name == "Shadow" then
+                -- Set transparency to 0 for shadow parts
+                if obj:IsA("BasePart") then
+                    obj.Transparency = 0
+                elseif obj:IsA("Model") then
+                    for _, part in ipairs(obj:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.Transparency = 0
+                        end
+                    end
+                end
+                ensureHighlight(obj)
+            elseif hasHook1(obj) then
+                ensureHighlight(obj)
+            elseif string.find(obj.Name, "RespawnLocation") then
+                -- Set transparency to 0 for shadow parts
+                if obj:IsA("BasePart") then
+                    obj.Transparency = 0
+                elseif obj:IsA("Model") then
+                    for _, part in ipairs(obj:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.Transparency = 0
+                        end
+                    end
+                end
+                ensureHighlight(obj)
+			end
+        end
+    end
+end
+
 local function applyPlayerESP(character, color)
     if not character:IsA("Model") then return end
     if character:FindFirstChild(PLAYER_ESP_NAME) then return end
@@ -1288,7 +1413,7 @@ local function applyPlayerESP(character, color)
 	billboard.StudsOffset = Vector3.new(0, 2, 0)
 	local textLabel = Instance.new("TextLabel", billboard)
 	textLabel.Size = UDim2.new(1, 0, 1, 0)
-	textLabel.Text = character.Name
+	textLabel.Text = "(" .. tostring(character.Name) .. ") " .. tostring(character:GetAttribute("Username")) 
 	textLabel.TextColor3 = Color3.new(1, 1, 1)
 	textLabel.TextStrokeTransparency = 0
 	textLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
@@ -1392,6 +1517,8 @@ RunService.Heartbeat:Connect(function()
             applyPlayerESP(char, COLOR_KILLER)
         end
     end
+
+	applyTrapsandSpikesESP(COLOR_TRAPSANDSPIKES)
 end)
 
 -- Item ESP initial scan
@@ -1661,31 +1788,39 @@ local chargeAnimIds = { "106014898528300" }
 
 -- Infinite Stamina
 local function enableInfiniteStamina(state)
-	infiniteStamina = state
-	local success, StaminaModule = pcall(function()
-		return require(game.ReplicatedStorage.Systems.Character.Game.Sprinting)
-	end)
-
-	if not success then
-		Fluent:Notify({
-			Title = "Error",
-			Content = "Your executor doesn't support Infinite Stamina.",
-			Duration = 5,
-			Image = "ban",
-		})
-		task.wait(5)
+    isitinfiniteStamina = state
+	if not requireSupported then
+    	Fluent:Notify({
+        	Title = "Error",
+            Content = "Your executor doesn't support Infinite Stamina.",
+            Duration = 5,
+            Image = "ban",
+        })
 		return
 	end
+    
+    -- Check if the module even exists
+    local sprintModule = game.ReplicatedStorage:FindFirstChild("Systems")
+        and game.ReplicatedStorage.Systems:FindFirstChild("Character")
+        and game.ReplicatedStorage.Systems.Character:FindFirstChild("Game")
+        and game.ReplicatedStorage.Systems.Character.Game:FindFirstChild("Sprinting")
 
-	local connection
-	connection = game:GetService("RunService").Heartbeat:Connect(function()
-		if not SkibidiStaminaLoop then
-			connection:Disconnect()
-			StaminaModule.StaminaLossDisabled = nil
-			return
-		end
-		StaminaModule.StaminaLossDisabled = function() end
-	end)
+    local success, StaminaModule = pcall(function()
+        return require(sprintModule)
+    end)
+
+    -- Heartbeat loop
+    local connection
+    connection = game:GetService("RunService").Heartbeat:Connect(function()
+        if not isitinfiniteStamina then
+            connection:Disconnect()
+            if type(StaminaModule.StaminaLossDisabled) ~= "function" then
+                StaminaModule.StaminaLossDisabled = false
+            end
+            return
+        end
+        StaminaModule.StaminaLossDisabled = function() end
+    end)
 end
 
 -- Goon animation
@@ -1757,71 +1892,102 @@ local function startLayDown()
 end
 
 local function generatorDoAll()
-    -- Get fresh character, humanoid, and rootPart each time
-    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoid or not rootPart then
-        warn("Missing Humanoid or HumanoidRootPart")
-        return
-    end
+    local LocalPlayer = game.Players.LocalPlayer
+    local Workspace = game.Workspace
 
-    -- Save current position
-    local savedPos = rootPart.Position
+    local function findGenerators()
+        local mapFolder = Workspace:FindFirstChild("Map")
+        local ingameMap = mapFolder and mapFolder:FindFirstChild("Ingame")
+        local map = ingameMap and ingameMap:FindFirstChild("Map")
+        local generators = {}
 
-    local mapFolder = Workspace:FindFirstChild("Map")
-    if not mapFolder then
-        warn("Map folder not found")
-        return
-    end
-    local ingameMap = mapFolder:FindFirstChild("Ingame")
-    if not ingameMap then
-        warn("Ingame folder not found")
-        return
-    end
-    local map = ingameMap:FindFirstChild("Map")
-    if not map then
-        warn("Map not found")
-        return
-    end
+        if map then
+            for _, gen in ipairs(map:GetChildren()) do
+                if gen.Name == "Generator" and gen:IsA("Model") and gen:FindFirstChild("Progress") and gen.Progress.Value < 100 then
+                    -- Check if any players are within 25 studs of generator's Main part
+                    local playersNearby = false
+                    for _, player in ipairs(game.Players:GetPlayers()) do
+                        local char = player.Character
+                        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                        if hrp and gen:FindFirstChild("Main") then
+                            local dist = (hrp.Position - gen.Main.Position).Magnitude
+                            if dist < 25 then
+                                playersNearby = true
+                                break
+                            end
+                        end
+                    end
 
-    -- Get all generators
-    local generators = {}
-    for _, obj in pairs(map:GetChildren()) do
-        if obj.Name == "Generator" and obj:IsA("Model") then
-            table.insert(generators, obj)
-        end
-    end
-
-    local function teleport(position)
-        rootPart.CFrame = CFrame.new(position + Vector3.new(0, 5, 0))
-    end
-
-    local function doGeneratorPuzzles(gen)
-        for puzzleNum = 1, 4 do
-            local prompt = gen.Main:WaitForChild("Prompt", 1)
-            if prompt then
-				fireproximityprompt(gen.Main:WaitForChild("Prompt", 1))
-				local PuzzleUI = Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("PuzzleUI", 9999)
+                    if not playersNearby then
+                        table.insert(generators, gen)
+                    end
+                end
             end
-            task.wait(timebetweenpuzzles)
-            gen.Remotes.RE:FireServer()
         end
 
-        if gen.Remotes:FindFirstChild("RF") then
-            gen.Remotes.RF:InvokeServer("leave")
+        return generators
+    end
+
+    -- Save current player position to return later
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    local lastPosition = humanoidRootPart.CFrame
+
+    -- Main loop: keep working generators until none left
+    while true do
+        local generators = findGenerators()
+        if #generators == 0 then
+            break
+        end
+
+        for _, gen in ipairs(generators) do
+            if gen:FindFirstChild("Main") and gen:FindFirstChild("Remotes") and gen.Remotes:FindFirstChild("RE") and gen.Remotes:FindFirstChild("RF") then
+                -- Compute direction to face generator cube (if it exists)
+				local generatorPosition = gen.Positions.Center.Position
+				local generatorDirection
+
+				if gen.Instances.Generator:FindFirstChild("Cube") and gen.Instances.Generator.Cube:IsA("BasePart") then
+					local cubePos = gen.Instances.Generator.Cube.Position
+					generatorDirection = (cubePos - generatorPosition).Unit
+				else
+					generatorDirection = Vector3.new(0, 0, 1) -- fallback direction forward
+				end
+
+				-- Teleport player to generator, facing the cube (or forward)
+				humanoidRootPart.CFrame = CFrame.new(
+					generatorPosition + Vector3.new(0, 0.5, 0),
+					generatorPosition + Vector3.new(generatorDirection.X, 0, generatorDirection.Z)
+				)
+
+                task.wait(timebetweenpuzzles / 2) -- adjust wait time as needed
+
+                -- Fire the proximity prompt
+                local prompt = gen.Main:FindFirstChildOfClass("ProximityPrompt")
+                if not prompt then
+                    prompt = gen.Main:FindFirstChild("Prompt")
+                end
+                if prompt then
+                    fireproximityprompt(prompt, 1, false)
+                else
+                    warn("No prompt found on generator:", gen.Name)
+                end
+
+                -- Fire the remote server call multiple times (6 times as in your example)
+                for _ = 1, 6 do
+                    task.wait(2.5)
+                    gen.Remotes.RE:FireServer()
+                end
+
+                task.wait(timebetweenpuzzles / 5) -- small delay before leaving
+
+                -- Invoke the "leave" remote
+                gen.Remotes.RF:InvokeServer("leave")
+            end
         end
     end
 
-    for _, gen in ipairs(generators) do
-        while gen:FindFirstChild("Progress") and gen.Progress.Value ~= 100 do
-            teleport(gen:GetModelCFrame().p or (gen.PrimaryPart and gen.PrimaryPart.Position) or gen:GetChildren()[1].Position)
-            doGeneratorPuzzles(gen)
-            task.wait(1)
-        end
-    end
-
-    teleport(savedPos)
+    -- Return player to original position
+    humanoidRootPart.CFrame = lastPosition
 end
 
 local function stopLayDown()
@@ -1961,7 +2127,7 @@ local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
-    	SubTitle = "v3",
+    	SubTitle = "v3.0.1",
     	TabWidth = 160,
     	Size = UDim2.fromOffset(580, 460),
     	Theme = "Dark",
@@ -2139,17 +2305,6 @@ if FluentLoaded then
             else
                 disableAimbot()
             end
-        end
-    })
-
-	Tabs.Player:AddSlider("ChancePredic", {
-        Title = "Chance Aimbot Prediction Value",
-        Default = 0.2,
-        Min = 0.1,
-        Max = 3,
-        Rounding = 2,
-        Callback = function(value)
-			timeAhead = value
         end
     })
 
@@ -2394,10 +2549,10 @@ if FluentLoaded then
     })
 
     Tabs.Blatant:AddSlider("GenSpeedValue", {
-        Title = "Time Between Puzzles",
-        Default = 3.5,
-        Min = 2.5,
-        Max = 6,
+        Title = "Do All Generator Speed",
+        Default = 3,
+        Min = 3,
+        Max = 10,
         Rounding = 1,
         Callback = function(value)
             timebetweenpuzzles = value
@@ -3138,6 +3293,8 @@ Fluent:Notify({
     Duration = 8
 })
 
+local hubLoaded = true
+
 local toggleHolder = game.CoreGui.TopBarApp.TopBarApp.UnibarLeftFrame.UnibarMenu["2"]
 local originalSize = toggleHolder.Size.X.Offset
 local sSize = UDim2.new(0, originalSize + 48, 0, toggleHolder.Size.Y.Offset)
@@ -3174,15 +3331,6 @@ end
 -- Connect button activation to toggle function
 imageButton.Activated:Connect(toggleGoonsakenHub)
 
--- Optional: Also toggle on key press (F key)
-local UIS = game:GetService("UserInputService")
-UIS.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.F then
-        toggleGoonsakenHub()
-    end
-end)
-
 -- Adjust toggleHolder size and button position every frame (to keep in sync)
 while task.wait(0.03) do
     toggleHolder.Size = sSize
@@ -3190,4 +3338,3 @@ while task.wait(0.03) do
 end
 
 SaveManager:LoadAutoloadConfig()
-
