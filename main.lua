@@ -36,8 +36,6 @@ end
 if executor == "Xeno" then
 	requireSupported = false
 else
-	checkRequireSupport()
-	print("your executor require support is: " .. tostring(requireSupported))
 	requireSupported = true
 end
 
@@ -1801,29 +1799,6 @@ local function enableInfiniteStamina(state)
         })
 		return
 	end
-	local loopConnection
-	loopConnection = RunService.Heartbeat:Connect(function()
-    	if not isitInfiniteStamina then
-    	    loopConnection:Disconnect()
-			local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
-			local stamina = require(Sprinting)
-			stamina.MaxStamina = 100  -- Maximum stamina
-			stamina.MinStamina = 0  -- Minimum stamina
-			stamina.StaminaGain = 20 -- Stamina gain
-			stamina.StaminaLoss = 10 -- Stamina loss	
-			stamina.SprintSpeed = 26 -- Sprint speed
-			stamina.StaminaLossDisabled = false -- Disable stamina drain (true/false)
-    	    return
-    	end
-
-    	local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
-		local stamina = require(Sprinting)
-		stamina.MaxStamina = 100  -- Maximum stamina
-		stamina.MinStamina = -20  -- Minimum stamina
-		stamina.StaminaGain = 100 -- Stamina gain
-		stamina.StaminaLoss = 5 -- Stamina loss	
-		stamina.SprintSpeed = 40 -- Sprint speed
-		stamina.StaminaLossDisabled = true -- Disable stamina drain (true/false)
 	end)
 end
 
@@ -3354,5 +3329,16 @@ RunService.Heartbeat:Connect(function()
 	if autofixgenerator == true then
 		triggerNearestGenerator()
 	end
+	if isitinfiniteStamina then
+    	local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
+		local stamina = require(Sprinting)
+		stamina.MaxStamina = 100  -- Maximum stamina
+		stamina.MinStamina = -20  -- Minimum stamina
+		stamina.StaminaGain = 100 -- Stamina gain
+		stamina.StaminaLoss = 5 -- Stamina loss	
+		stamina.SprintSpeed = 40 -- Sprint speed
+		stamina.StaminaLossDisabled = true -- Disable stamina drain (true/false)
+	end
 end)
+
 
