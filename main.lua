@@ -13,6 +13,7 @@ local Animator = Humanoid:WaitForChild("Animator")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local Do1x1PopupsLoop = false
 local nameprotectEnabled = false
+local AntiSlow = false
 
 LocalPlayer.CharacterAdded:Connect(function(char)
 	Character = char
@@ -20,6 +21,46 @@ LocalPlayer.CharacterAdded:Connect(function(char)
 	Animator = Humanoid:WaitForChild("Animator")
 	HumanoidRootPart = char:WaitForChild("HumanoidRootPart")
 end)
+
+local function checkAndSetSlowStatus()
+    if AntiSlow == false then
+        return
+    end
+
+    local character = Humanoid.Parent
+    if not character then return end
+
+    local speedMultipliers = character:FindFirstChild("SpeedMultipliers")
+    if not speedMultipliers then return end
+
+    local slowedStatus = speedMultipliers:FindFirstChild("SlowedStatus")
+    if not slowedStatus or not slowedStatus:IsA("NumberValue") then return end
+
+    slowedStatus.Value = 1
+
+    local fovMultipliers = character:FindFirstChild("FOVMultipliers")
+    if not fovMultipliers then return end
+
+    local fovSlowedStatus = fovMultipliers:FindFirstChild("SlowedStatus")
+    if not fovSlowedStatus or not fovSlowedStatus:IsA("NumberValue") then return end
+
+    fovSlowedStatus.Value = 1
+
+    -- Remove Slowness UI if it exists
+    local playerGui = game.Players.LocalPlayer:FindFirstChild("PlayerGui")
+    if playerGui then
+        local mainUI = playerGui:FindFirstChild("MainUI")
+        if mainUI then
+            local statusContainer = mainUI:FindFirstChild("StatusContainer")
+            if statusContainer then
+                local slownessUI = statusContainer:FindFirstChild("Slowness")
+                if slownessUI then
+                    slownessUI:Destroy()
+                end
+            end
+        end
+    end
+end
 
 local function Do1x1x1x1Popups()
 	while true do
@@ -1554,7 +1595,7 @@ local function createStatsTracker()
     return screenGui
 end
 
--- Default toggles and helpers (we will hook these to Rayfield UI)
+-- Default toggles and helpers (we will hook these to Fluent UI)
 local toggles = {
     StatsTracker = false,
     ESP = false,
@@ -1626,9 +1667,9 @@ local function enableInfiniteStamina(state)
 	end)
 
 	if not success then
-		Rayfield:Notify({
+		Fluent:Notify({
 			Title = "Error",
-			Content = "Your executor doesn't support this.",
+			Content = "Your executor doesn't support Infinite Stamina.",
 			Duration = 5,
 			Image = "ban",
 		})
@@ -1899,47 +1940,62 @@ end
 local frontflipObj = createFrontflip()()
 
 -- Active UI references
-local RayfieldLoaded = false
+local FluentLoaded = false
 
--- Load Rayfield
-local success, Rayfield = pcall(function()
-    -- common Rayfield loader; change if you have a different loader string
-    return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Load Fluent
+local success, Fluent = pcall(function()
+    -- common Fluent loader; change if you have a different loader string
+    return loadstring(game:HttpGet('https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua'))()
 end)
-if success and Rayfield then
-    RayfieldLoaded = true
+if success and Fluent then
+    FluentLoaded = true
 else
-    warn("Rayfield failed to load. GUI will not appear.")
+    warn("Fluent failed to load. GUI will not appear.")
 end
 
--- Create Rayfield window & tabs if Rayfield loaded
-local Window, PlayerTab, GameTab, MiscTab, BlatantTab, AutoBlockTab, PredictiveTab, FakeBlockTab, AutoPunchTab, CustomAnimationsTab
-if RayfieldLoaded then
-    Window = Rayfield:CreateWindow({
-        Name = "Goonsaken Hub by NumanTF2",
-        LoadingTitle = "Loading Goonsaken Hub",
-        LoadingSubtitle = "by NumanTF2",
-        Theme = "Amethyst",
-        ConfigurationSaving = {
-            Enabled = true,
-            FolderName = "Goonsaken",
-            FileName = "Settings"
-        },
-        Discord = {
-            Enabled = false
-        },
-        KeySystem = false
-    })
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
-    PlayerTab = Window:CreateTab("Player", "circle-user")
-    GameTab = Window:CreateTab("Game", "gamepad-2")
-    MiscTab = Window:CreateTab("Misc", 4483362458)
-    BlatantTab = Window:CreateTab("Blatant", "angry")
-	AutoBlockTab = Window:CreateTab("Auto Block", 4483362458)
-	PredictiveTab = Window:CreateTab("Predictive Auto Block", 4483362458)
-	FakeBlockTab = Window:CreateTab("Fake Block", 4483362458)
-	AutoPunchTab = Window:CreateTab("Auto Punch", 4483362458)
-	CustomAnimationsTab = Window:CreateTab("Custom Animations", 4483362458)
+-- Create Fluent window & tabs if Fluent loaded
+local Window, Tabs, Player, Game, Misc, Blatant, AutoBlock, Predictive, FakeBlock, AutoPunch, CustomAnimations, Settings
+if FluentLoaded then
+    Window = Fluent:CreateWindow({
+    	Title = "Goonsaken Hub",
+    	SubTitle = "v3",
+    	TabWidth = 160,
+    	Size = UDim2.fromOffset(580, 460),
+    	Theme = "Dark",
+    	MinimizeKeyBind = Enum.KeyCode.K
+	})
+
+	Tabs = {
+   		Player = Window:AddTab({ Title = "Player", Icon = "lucide-circle-user" }),
+   		Game = Window:AddTab({ Title = "Game", Icon = "lucide-gamepad-2" }),
+   		Misc = Window:AddTab({ Title = "Misc", Icon = "lucide-anvil" }),
+   		Blatant = Window:AddTab({ Title = "Blatant", Icon = "lucide-angry" }),
+   		AutoBlock = Window:AddTab({ Title = "Auto Block", Icon = "lucide-leaf" }),
+   		PredictiveAutoBlock = Window:AddTab({ Title = "Predictive Auto Block", Icon = "lucide-leaf" }),
+   		FakeBlock = Window:AddTab({ Title = "Fake Block", Icon = "lucide-leaf" }),
+   		AutoPunch = Window:AddTab({ Title = "Auto Punch", Icon = "lucide-leaf" }),
+   		CustomAnimations = Window:AddTab({ Title = "Custom Animations", Icon = "lucide-person-standing" }),
+		Settings = Window:AddTab({ Title = "Settings", Icon = "lucide-settings" })
+	}
+
+	SaveManager:SetLibrary(Fluent)
+	InterfaceManager:SetLibrary(Fluent)
+	SaveManager:IgnoreThemeSettings()
+	SaveManager:SetIgnoreIndexes({})
+	InterfaceManager:SetFolder("GoonsakenHub")
+	SaveManager:SetFolder("GoonsakenHub/Configs")
+	InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+	SaveManager:BuildConfigSection(Tabs.Settings)
+
+	Fluent:Notify({
+		Title = "Loading...",
+		Content = "the little goon minions are loading goonsaken hub!!!",
+		Duration = 5,
+		Image = "ban",
+	})
 end
 
 local autoBlockOn = false
@@ -1986,16 +2042,16 @@ local chargeAnimIds = { "106014898528300" }
 statsGui = createStatsTracker()
 statsGui.Enabled = false
 
--- Hook up Rayfield controls (or fallback behavior if Rayfield didn't load)
-if RayfieldLoaded then
-    -- Player Tab
-    PlayerTab:CreateSlider({
-        Name = "Walkspeed",
-        Range = {1, 5},
-        Increment = 0.1,
+-- Hook up Fluent controls (or fallback behavior if Fluent didn't load)
+if FluentLoaded then
+    -- Player Tab (Fluent version)
+    Tabs.Player:AddSlider("Walkspeed", {
+        Title = "Walkspeed",
+        Default = 1,
+        Min = 1,
+        Max = 5,
+        Rounding = 1,
         Suffix = "x",
-        CurrentValue = 1,
-        Flag = "WalkspeedValue",
         Callback = function(value)
             local char = LocalPlayer.Character
             local humanoid = char and char:FindFirstChildOfClass("Humanoid")
@@ -2005,13 +2061,12 @@ if RayfieldLoaded then
         end
     })
 
-    PlayerTab:CreateSlider({
-        Name = "Jump Power",
-        Range = {0, 100},
-        Increment = 1,
-        Suffix = "",
-        CurrentValue = 50,
-        Flag = "JumpPowerValue",
+    Tabs.Player:AddSlider("JumpPower", {
+        Title = "Jump Power",
+        Default = 50,
+        Min = 0,
+        Max = 100,
+        Rounding = 0,
         Callback = function(value)
             local char = LocalPlayer.Character
             local humanoid = char and char:FindFirstChildOfClass("Humanoid")
@@ -2021,10 +2076,9 @@ if RayfieldLoaded then
         end
     })
 
-    PlayerTab:CreateToggle({
-        Name = "Goon",
-        CurrentValue = false,
-        Flag = "GoonToggle",
+    Tabs.Player:AddToggle("Goon", {
+        Title = "Goon",
+        Default = false,
         Callback = function(state)
             toggles.Goon = state
             if state then
@@ -2035,10 +2089,9 @@ if RayfieldLoaded then
         end
     })
 
-    PlayerTab:CreateToggle({
-        Name = "Lay Down",
-        CurrentValue = false,
-        Flag = "LayDownToggle",
+    Tabs.Player:AddToggle("LayDown", {
+        Title = "Lay Down",
+        Default = false,
         Callback = function(state)
             toggles.LayDown = state
             if state then
@@ -2049,8 +2102,8 @@ if RayfieldLoaded then
         end
     })
 
-    PlayerTab:CreateButton({
-        Name = "Frontflip (Key: F)",
+    Tabs.Player:AddButton({
+        Title = "Frontflip (Key: F)",
         Callback = function()
             if frontflipObj and frontflipObj.Flip then
                 frontflipObj.Flip()
@@ -2058,24 +2111,31 @@ if RayfieldLoaded then
         end
     })
 
-	PlayerTab:CreateButton({
-        Name = "Auto 404 Parry",
-        Callback = function()
-			loadstring(game:HttpGet("https://raw.githubusercontent.com/NumanTF3/auto-404-parry/refs/heads/main/main.lua"))()
+    Tabs.Player:AddToggle("AntiSlowness", {
+        Title = "Anti Slowness",
+        Default = false,
+        Callback = function(state)
+            AntiSlow = state
         end
     })
 
-		PlayerTab:CreateButton({
-        Name = "Auto Raging Pace Parry",
+    Tabs.Player:AddButton({
+        Title = "Auto 404 Parry",
         Callback = function()
-			loadstring(game:HttpGet("https://raw.githubusercontent.com/NumanTF3/auto-raging-pace/refs/heads/main/main.lua"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/NumanTF3/auto-404-parry/refs/heads/main/main.lua"))()
         end
     })
 
-    PlayerTab:CreateToggle({
-        Name = "Chance Aimbot",
-        CurrentValue = false,
-        Flag = "AimbotToggle",
+    Tabs.Player:AddButton({
+        Title = "Auto Raging Pace Parry",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/NumanTF3/auto-raging-pace/refs/heads/main/main.lua"))()
+        end
+    })
+
+    Tabs.Player:AddToggle("ChanceAimbot", {
+        Title = "Chance Aimbot",
+        Default = false,
         Callback = function(state)
             if state then
                 enableAimbot()
@@ -2085,90 +2145,88 @@ if RayfieldLoaded then
         end
     })
 
-    PlayerTab:CreateButton({
-        Name = "Ultra Instinct (auto dodge killer)",
+    Tabs.Player:AddButton({
+        Title = "Ultra Instinct (auto dodge killer)",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/NumanTF3/forsaken-ultra-instinct/refs/heads/main/main.lua'))()
         end
     })
-	
-    PlayerTab:CreateButton({
-        Name = "Auto Two Time Backstab and Aimbot",
+
+    Tabs.Player:AddButton({
+        Title = "Auto Two Time Backstab and Aimbot",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/NumanTF3/two-time-backstab/refs/heads/main/main.lua'))()
         end
     })
 
-	PlayerTab:CreateToggle({
-        Name = "Invisible",
-        CurrentValue = false,
-        Flag = "Invis",
+    Tabs.Player:AddToggle("Invisible", {
+        Title = "Invisible",
+        Default = false,
         Callback = function(state)
-			if state then
-				Rayfield:Notify({
-   					Title = "Read me!",
-   					Content = "The block in the middle of your screen is your player! it is still invisible to others. it is just to guide you where you are.",
-    				Duration = 6.5,
-    				Image = 4483362458,
-				})
-			end
+            if state then
+                Fluent:Notify({
+                    Title = "Read me!",
+                    Content = "The block in the middle of your screen is your player! it is still invisible to others. it is just to guide you where you are.",
+                    Duration = 6.5,
+                    Image = "lucide-leaf",
+                })
+            end
             ToggleInvis(state)
         end
     })
 
-    PlayerTab:CreateToggle({
-        Name = "Fully Invisible Upon Cloning (007n7)",
-        CurrentValue = false,
-        Flag = "Invis007n7",
+    Tabs.Player:AddToggle("Invis007n7", {
+        Title = "Fully Invisible Upon Cloning (007n7)",
+        Default = false,
         Callback = function(state)
-			if state then
-				Rayfield:Notify({
-   					Title = "Read me!",
-   					Content = "When Cloning, The block in the middle of your screen is your player! it is still invisible to others. it is just to guide you where you are.",
-    				Duration = 6.5,
-    				Image = 4483362458,
-				})
-			end
+            if state then
+                Fluent:Notify({
+                    Title = "Read me!",
+                    Content = "When Cloning, The block in the middle of your screen is your player! it is still invisible to others. it is just to guide you where you are.",
+                    Duration = 6.5,
+                    Image = "lucide-leaf",
+                })
+            end
             handleToggle(state)
         end
     })
 
-	PlayerTab:CreateToggle({
-		Name = "Hitbox Modifier",
-		CurrentValue = false,
-		Flag = "hitboxmodifier",
-		Callback = function(Value)
-			hitboxmodificationEnabled = Value
-		end
-	})
+    Tabs.Player:AddToggle("HitboxModifier", {
+        Title = "Hitbox Modifier",
+        Default = false,
+        Callback = function(Value)
+            hitboxmodificationEnabled = Value
+        end
+    })
 
-	PlayerTab:CreateInput({
-		Name = "Hitbox Detection Distance",
-		PlaceholderText = "120",
-		RemoveTextAfterFocusLost = false,
-		Flag = "detectionrange",
-		Callback = function(Value)
-			local num = tonumber(Value)
-			if num then
-				MaxRange = num
-			end
-		end
-	})
+    Tabs.Player:AddInput("HitboxDetectionDistance", {
+        Title = "Hitbox Detection Distance",
+        Default = "120",
+        Placeholder = "120",
+        Numeric = true,
+        Callback = function(Value)
+            local num = tonumber(Value)
+            if num then
+                MaxRange = num
+            end
+        end
+    })
+
+    --------------------------------------------------------------------------
     -- Game Tab
-    GameTab:CreateToggle({
-        Name = "ESP",
-        CurrentValue = false,
-        Flag = "ESPToggle",
+    --------------------------------------------------------------------------
+    Tabs.Game:AddToggle("ESPToggle", {
+        Title = "ESP",
+        Default = false,
         Callback = function(state)
             toggles.ESP = state
             ESP:SetEnabled(state)
         end
     })
 
-    GameTab:CreateToggle({
-        Name = "Stats Tracker",
-        CurrentValue = false,
-        Flag = "StatsTrackerToggle",
+    Tabs.Game:AddToggle("StatsTrackerToggle", {
+        Title = "Stats Tracker",
+        Default = false,
         Callback = function(state)
             toggles.StatsTracker = state
             if statsGui then
@@ -2177,19 +2235,18 @@ if RayfieldLoaded then
         end
     })
 
-    GameTab:CreateToggle({
-        Name = "Infinite Stamina",
-        CurrentValue = false,
+    Tabs.Game:AddToggle("InfiniteStamina", {
+        Title = "Infinite Stamina",
+        Default = false,
         Callback = function(value)
             enableInfiniteStamina(value)
         end
     })
 
     -- Auto Rejoin on Kick (default ON)
-    GameTab:CreateToggle({
-        Name = "Auto Rejoin on Kick",
-        CurrentValue = true,
-        Flag = "AutoRejoinToggle",
+    Tabs.Game:AddToggle("AutoRejoinToggle", {
+        Title = "Auto Rejoin on Kick",
+        Default = true,
         Callback = function(state)
             toggles.AutoRejoinOnKick = state
             if state then
@@ -2209,76 +2266,72 @@ if RayfieldLoaded then
         end
     })
 
-    GameTab:CreateButton({
-        Name = "Rejoin",
+    Tabs.Game:AddButton({
+        Title = "Rejoin",
         Callback = function()
             TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)
         end
     })
     
-    GameTab:CreateButton({
-        Name = "Do Current Generator (must be in generator)",
+    Tabs.Game:AddButton({
+        Title = "Do Current Generator (must be in generator)",
         Callback = function()
-			Rayfield:Notify({
-    			Title = "READ ME!",
-    			Content = "The generator puzzle will be done after 5 seconds. Do not spam or you will get kicked!",
-    			Duration = 5
-			})
+            Fluent:Notify({
+                Title = "READ ME!",
+                Content = "The generator puzzle will be done after 5 seconds. Do not spam or you will get kicked!",
+                Duration = 5
+            })
             triggerNearestGenerator()
         end
     })
 
-    GameTab:CreateToggle({
-        Name = "Auto 1x1x1x1 Popups",
-        CurrentValue = false,
-        Flag = "auto1x1x1x1popups",
+    Tabs.Game:AddToggle("auto1x1x1x1popups", {
+        Title = "Auto 1x1x1x1 Popups",
+        Default = false,
         Callback = function(state)
             Do1x1PopupsLoop = state
-			if state then
-				task.spawn(Do1x1x1x1Popups)
-			end
+            if state then
+                task.spawn(Do1x1x1x1Popups)
+            end
         end
     })
+    
+    --------------------------------------------------------------------------
     -- Misc Tab
-    MiscTab:CreateButton({
-        Name = "Infinite Yield",
+    --------------------------------------------------------------------------
+    Tabs.Misc:AddButton({
+        Title = "Infinite Yield",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
         end
     })
 
     --[[
-	MiscTab:CreateToggle({
-        Name = "NameProtect (Hides your username)",
-        CurrentValue = false,
-        Flag = "auto1x1x1x1popups",
+    Tabs.Misc:AddToggle("NameProtect", {
+        Title = "NameProtect (Hides your username)",
+        Default = false,
         Callback = function(state)
-            Do1x1PopupsLoop = state
-			if state then
-				nameprotectEnabled = state
-			end
+            nameprotectEnabled = state
         end
     })
-	]]--
+    ]]--
 
-    MiscTab:CreateKeybind({
-        Name = "Emote as Killer",
-        CurrentKeybind = "L",
-        HoldToInteract = false,
-        Flag = "KillerEmoteKeybind",
+    Tabs.Misc:AddKeybind("KillerEmoteKeybind", {
+        Title = "Emote as Killer",
+        Mode = "Always",
+        Default = "L",
         Callback = function()
             local existence = PlayerGui:FindFirstChild("KillerEmoteGUI") -- SAFE check
-            
             if existence == nil then
                 KillerEmoteGUI()
             end
         end
     })
 
-    MiscTab:CreateInput({
-        Name = "Play Sound by ID",
-        PlaceholderText = "Enter Roblox Sound ID",
-        RemoveTextAfterFocusLost = false,
+    Tabs.Misc:AddInput("PlaySoundByID", {
+        Title = "Play Sound by ID",
+        Placeholder = "Enter Roblox Sound ID",
+        Numeric = true,
         Callback = function(input)
             local id = tonumber(input)
             if id then
@@ -2290,134 +2343,130 @@ if RayfieldLoaded then
         end
     })
 
-    MiscTab:CreateDropdown({
-        Name = "Change LMS Song",
-        Options = {
-			"Burnout",
-			"Compass",
-			"Vanity",
-			"Close To Me",
-			"Plead",
-			"Creation Of Hatred",
-		},
-        CurrentOption = {"Burnout"},
-		MultipleOptions = false,
-        Callback = function(Options)
-       		selectedSong = Options[1]
-        	print("Selected LMS song:", selectedSong)
-		end
-	})
-
-	MiscTab:CreateButton({
-    	Name = "Replace LMS Song",
-    	Callback = function()
-    	    print("Waiting for Workspace.Themes.LastSurvivor to exist...")
-    	    
-    	    -- Wait for the sound object to appear in Workspace
-    	    local theme = game.Workspace:WaitForChild("Themes", 99999) -- 60 sec timeout
-    	    if not theme then
-    	        warn("Theme folder not found in Workspace!")
-    	        return
-    	    end
-	
-	        local lastSurvivor = theme:WaitForChild("LastSurvivor", 60)
-	        if not lastSurvivor then
-	            warn("LastSurvivor sound not found!")
-    	        return
-    	    end
-
-       	 -- Change song
-    	    local songId = LMSSongs[selectedSong]
-    	    if songId then
-    	        lastSurvivor.SoundId = songId
-    	        lastSurvivor:Play()
-    	        print("Changed LMS song to:", selectedSong)
-    	    else
-    	        warn("Invalid song name:", tostring(selectedSong))
-    	    end
-    	end
-	})	
-
-    BlatantTab:CreateButton({
-        Name = "Do All Generators",
-        Callback = function()
-        	generatorDoAll()
+    Tabs.Misc:AddDropdown("ChangeLMSSong", {
+        Title = "Change LMS Song",
+        Values = {
+            "Burnout", "Compass", "Vanity", "Close To Me", "Plead",
+            "Creation Of Hatred"
+        },
+        Multi = false,
+        Default = 1,
+        Callback = function(Value)
+            selectedSong = Value
+            print("Selected LMS song:", selectedSong)
         end
     })
 
-	BlatantTab:CreateSlider({
-        Name = "Time Between Puzzles",
-        Range = {2.5, 6},
-        Increment = 0.5,
-        Suffix = "",
-        CurrentValue = 3.5,
-        Flag = "GenSpeedValue",
+    Tabs.Misc:AddButton({
+        Title = "Replace LMS Song",
+        Callback = function()
+            print("Waiting for Workspace.Themes.LastSurvivor to exist...")
+            local theme = game.Workspace:WaitForChild("Themes", 99999)
+            if not theme then return end
+            local lastSurvivor = theme:WaitForChild("LastSurvivor", 60)
+            if not lastSurvivor then return end
+            local songId = LMSSongs[selectedSong]
+            if songId then
+                lastSurvivor.SoundId = songId
+                lastSurvivor:Play()
+                print("Changed LMS song to:", selectedSong)
+            else
+                warn("Invalid song name:", tostring(selectedSong))
+            end
+        end
+    })
+    --------------------------------------------------------------------------
+    -- Blatant Tab
+    --------------------------------------------------------------------------
+    Tabs.Blatant:AddButton({
+        Title = "Do All Generators",
+        Callback = function()
+            generatorDoAll()
+        end
+    })
+
+    Tabs.Blatant:AddSlider("GenSpeedValue", {
+        Title = "Time Between Puzzles",
+        Default = 3.5,
+        Min = 2.5,
+        Max = 6,
+        Rounding = 1,
         Callback = function(value)
-			timebetweenpuzzles = value
-		end
+            timebetweenpuzzles = value
+        end
     })
 
-    AutoBlockTab:CreateToggle({
-        Name = "Auto Block",
-        CurrentValue = false,
-        Callback = function(Value) autoBlockOn = Value end
+    --------------------------------------------------------------------------
+    -- Auto Block Tab
+    --------------------------------------------------------------------------
+    Tabs.AutoBlock:AddToggle("AutoBlockToggle", {
+        Title = "Auto Block",
+        Default = false,
+        Callback = function(Value)
+            autoBlockOn = Value
+        end
     })
 
-    AutoBlockTab:CreateToggle({
-        Name = "Strict Range",
-        CurrentValue = false,
-        Callback = function(Value) strictRangeOn = Value end
+    Tabs.AutoBlock:AddToggle("StrictRangeToggle", {
+        Title = "Strict Range",
+        Default = false,
+        Callback = function(Value)
+            strictRangeOn = Value
+        end
     })
 
-    AutoBlockTab:CreateDropdown({
-        Name = "Facing Check",
-        Options = {"Loose", "Strict"},
-        CurrentOption = "Loose",
-        Callback = function(Option) looseFacing = Option == "Loose" end
+    Tabs.AutoBlock:AddDropdown("FacingCheckDropdown", {
+        Title = "Facing Check",
+        Values = { "Loose", "Strict" },
+        Multi = false,
+        Default = "Loose",
+        Callback = function(Option)
+            looseFacing = Option == "Loose"
+        end
     })
 
-    AutoBlockTab:CreateInput({
-        Name = "Detection Range",
-        PlaceholderText = "18",
-        RemoveTextAfterFocusLost = false,
+    Tabs.AutoBlock:AddInput("DetectionRangeInput", {
+        Title = "Detection Range",
+        Placeholder = "18",
+        Numeric = true,
         Callback = function(Text)
             detectionRange = tonumber(Text) or detectionRange
         end
     })
 
-    AutoBlockTab:CreateParagraph({
+    Tabs.AutoBlock:AddParagraph({
         Title = "⚠️ Warning",
         Content = "plz do not use blocktp with fake block or disaster strucks"
     })
 
-    AutoBlockTab:CreateParagraph({
+    Tabs.AutoBlock:AddParagraph({
         Title = "",
         Content = "increase range so block tp works better (30 studs recommended)"
     })
 
-    local blockTPEnabled = false
-
-    AutoBlockTab:CreateToggle({
-        Name = "Block TP",
-        CurrentValue = false,
+    Tabs.AutoBlock:AddToggle("BlockTPToggle", {
+        Title = "Block TP",
+        Default = false,
         Callback = function(Value)
             blockTPEnabled = Value
         end
     })
 
-
-    PredictiveTab:CreateToggle({
-        Name = "Predictive Auto Block",
-        CurrentValue = false,
+    --------------------------------------------------------------------------
+    -- Predictive Auto Block Tab
+    --------------------------------------------------------------------------
+    Tabs.PredictiveAutoBlock:AddToggle("PredictiveBlockToggle", {
+        Title = "Predictive Auto Block",
+        Default = false,
         Callback = function(Value)
             predictiveBlockOn = Value
         end
     })
 
-    PredictiveTab:CreateInput({
-        Name = "Detection Range",
-        PlaceholderText = "10",
-        RemoveTextAfterFocusLost = false,
+    Tabs.PredictiveAutoBlock:AddInput("PredictiveDetectionRange", {
+        Title = "Detection Range",
+        Placeholder = "10",
+        Numeric = true,
         Callback = function(text)
             local num = tonumber(text)
             if num then
@@ -2426,24 +2475,27 @@ if RayfieldLoaded then
         end
     })
 
-
-    PredictiveTab:CreateSlider({
-        Name = "Edge Killer",
-        Range = {0, 7},
-        Increment = 0.1,
-        CurrentValue = 3,
+    Tabs.PredictiveAutoBlock:AddSlider("EdgeKillerSlider", {
+        Title = "Edge Killer",
+        Default = 3,
+        Min = 0,
+        Max = 7,
+        Rounding = 1,
         Callback = function(val)
             edgeKillerDelay = val
         end
     })
 
-    PredictiveTab:CreateParagraph({
+    Tabs.PredictiveAutoBlock:AddParagraph({
         Title = "Edge Killer",
         Content = "How many seconds until it blocks (to counter smartass players) (resets when killer gets out of range)"
     })
 
-    FakeBlockTab:CreateButton({
-        Name = "Load Fake Block",
+    --------------------------------------------------------------------------
+    -- Fake Block Tab
+    --------------------------------------------------------------------------
+    Tabs.FakeBlock:AddButton({
+        Title = "Load Fake Block",
         Callback = function()
             pcall(function()
                 local fakeGui = PlayerGui:FindFirstChild("FakeBlockGui")
@@ -2462,93 +2514,110 @@ if RayfieldLoaded then
         end
     })
 
-    AutoPunchTab:CreateToggle({
-        Name = "Auto Punch",
-        CurrentValue = false,
-        Callback = function(Value) autoPunchOn = Value end
+    --------------------------------------------------------------------------
+    -- Auto Punch Tab
+    --------------------------------------------------------------------------
+    Tabs.AutoPunch:AddToggle("AutoPunchToggle", {
+        Title = "Auto Punch",
+        Default = false,
+        Callback = function(Value)
+            autoPunchOn = Value
+        end
     })
 
-    AutoPunchTab:CreateToggle({
-        Name = "Fling Punch",
-        CurrentValue = false,
-        Callback = function(Value) flingPunchOn = Value end
+    Tabs.AutoPunch:AddToggle("FlingPunchToggle", {
+        Title = "Fling Punch",
+        Default = false,
+        Callback = function(Value)
+            flingPunchOn = Value
+        end
     })
 
-    AutoPunchTab:CreateToggle({
-        Name = "Punch Aimbot",
-        CurrentValue = false,
-        Callback = function(Value) aimPunch = Value end
+    Tabs.AutoPunch:AddToggle("PunchAimbotToggle", {
+        Title = "Punch Aimbot",
+        Default = false,
+        Callback = function(Value)
+            aimPunch = Value
+        end
     })
 
     local predictionValue = 4
-
-    AutoPunchTab:CreateSlider({
-        Name = "Aim Prediction",
-        Range = {0, 10},
-        Increment = 0.1,
+    Tabs.AutoPunch:AddSlider("AimPredictionSlider", {
+        Title = "Aim Prediction",
+        Default = predictionValue,
+        Min = 0,
+        Max = 10,
+        Rounding = 1,
         Suffix = "studs",
-        CurrentValue = predictionValue,
-        Flag = "PredictionSlider",
         Callback = function(Value)
             predictionValue = Value
-        end,
+        end
     })
 
-    AutoPunchTab:CreateSlider({
-        Name = "Fling Power",
-        Range = {5000, 50000000000000},
-        Increment = 1000000,
-        CurrentValue = 10000,
-        Callback = function(Value) flingPower = Value end
+    Tabs.AutoPunch:AddSlider("FlingPowerSlider", {
+        Title = "Fling Power",
+        Default = 10000,
+        Min = 5000,
+        Max = 50000000000000,
+        Rounding = 0,
+        Callback = function(Value)
+            flingPower = Value
+        end
     })
 
-    CustomAnimationsTab:CreateInput({
-        Name = "Custom Block Animation",
-        PlaceholderText = "AnimationId",
-        RemoveTextAfterFocusLost = false,
-        Callback = function(Text) customBlockAnimId = Text end
+    --------------------------------------------------------------------------
+    -- Custom Animations Tab
+    --------------------------------------------------------------------------
+    Tabs.CustomAnimations:AddInput("CustomBlockAnim", {
+        Title = "Custom Block Animation",
+        Placeholder = "AnimationId",
+        Callback = function(Text)
+            customBlockAnimId = Text
+        end
     })
 
-    CustomAnimationsTab:CreateToggle({
-        Name = "Enable Custom Block Animation",
-        CurrentValue = false,
-        Callback = function(Value) customBlockEnabled = Value end
+    Tabs.CustomAnimations:AddToggle("EnableCustomBlockAnim", {
+        Title = "Enable Custom Block Animation",
+        Default = false,
+        Callback = function(Value)
+            customBlockEnabled = Value
+        end
     })
 
-    CustomAnimationsTab:CreateInput({
-        Name = "Custom Punch Animation (not for M3/M4)",
-        PlaceholderText = "AnimationId",
-        RemoveTextAfterFocusLost = false,
-        Callback = function(Text) customPunchAnimId = Text end
+    Tabs.CustomAnimations:AddInput("CustomPunchAnim", {
+        Title = "Custom Punch Animation",
+        Placeholder = "AnimationId",
+        Callback = function(Text)
+            customPunchAnimId = Text
+        end
     })
 
-    CustomAnimationsTab:CreateToggle({
-        Name = "Enable Custom Punch Animation",
-        CurrentValue = false,
-        Callback = function(Value) customPunchEnabled = Value end
+    Tabs.CustomAnimations:AddToggle("EnableCustomPunchAnim", {
+        Title = "Enable Custom Punch Animation",
+        Default = false,
+        Callback = function(Value)
+            customPunchEnabled = Value
+        end
     })
 
-    CustomAnimationsTab:CreateInput({
-        Name = "Charge Animation ID",
-        PlaceholderText = "Put animation ID here",
-        RemoveTextAfterFocusLost = false,
+    Tabs.CustomAnimations:AddInput("ChargeAnimID", {
+        Title = "Charge Animation ID",
+        Placeholder = "Put animation ID here",
         Callback = function(input)
             customChargeAnimId = input
-        end,
+        end
     })
 
-    CustomAnimationsTab:CreateToggle({
-        Name = "Custom Charge Animation",
-        CurrentValue = false,
+    Tabs.CustomAnimations:AddToggle("EnableCustomChargeAnim", {
+        Title = "Custom Charge Animation",
+        Default = false,
         Callback = function(value)
             customChargeEnabled = value
-        end,
+        end
     })
-
-
 else
-    -- Rayfield not loaded fallback: wire minimal keybinds and defaults
-    warn("Rayfield not loaded; GUI controls unavailable. Core features remain active via defaults where possible.")
+	-- Fluent not loaded fallback: wire minimal keybinds and defaults
+    warn("Fluent not loaded; GUI controls unavailable. Core features remain active via defaults where possible.")
 end
 
 -- Ensure AutoRejoin default ON (original script created a connection by default)
@@ -3044,3 +3113,21 @@ RunService.Heartbeat:Connect(function()
 	RunService.RenderStepped:Wait()
 	HumanoidRootPart.Velocity = oldVelocity
 end)
+
+RunService.Heartbeat:Connect(function()
+	if AntiSlow == true then
+		checkAndSetSlowStatus()
+	end
+end)
+
+-- Select the first tab on load
+Window:SelectTab("Player")
+
+-- Notify when loaded
+Fluent:Notify({
+    Title = "Goonsaken Hub",
+    Content = "time to goon!!!",
+    Duration = 8
+})
+
+SaveManager:LoadAutoloadConfig()
