@@ -2068,7 +2068,7 @@ local function createFrontflip()
     end
 end
 
-local frontflipObj = create()()
+local frontflipObj = createFrontflip()()
 
 -- Active UI references
 local FluentLoaded = false
@@ -3349,7 +3349,3 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = false
 	end
 end)
-
-
-
-
