@@ -15,6 +15,8 @@ local Do1x1PopupsLoop = false
 local nameprotectEnabled = false
 local AntiSlow = false
 local hubLoaded = false
+local timeforonegen = 2.5
+local autofixgenerator = false
 
 local executor = getgenv().identifyexecutor and getgenv().identifyexecutor() or "RobloxClientApp"
 
@@ -31,7 +33,12 @@ local function checkRequireSupport()
     dummyModule:Destroy()
 end
 
-checkRequireSupport()
+if executor == "Xeno" then
+	requireSupported = false
+else
+	checkRequireSupport()
+end
+
 print("your executor require support is: " .. tostring(requireSupported))
 
 local function fireproximityprompt(Obj, Amount, Skip)
@@ -1229,22 +1236,18 @@ local function findNearestGenerator()
 end
 
 local function triggerNearestGenerator()
+	local PuzzleUI = Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("PuzzleUI", 9999)
     local gen = findNearestGenerator()
     if gen and gen:FindFirstChild("Remotes") and gen.Remotes:FindFirstChild("RE") then
         
-        local lastFire = 0
         local conn
         conn = RunService.Heartbeat:Connect(function()
             if gen.Progress.Value >= 100 then
                 conn:Disconnect()
                 return
             end
-            
-            -- fire every 5 seconds
-            if tick() - lastFire >= 5 then
-                gen.Remotes.RE:FireServer()
-                lastFire = tick()
-            end
+            task.wait(timeforonegen)
+            gen.Remotes.RE:FireServer()
         end)
 
         print("Triggered generator:", gen.Name)
@@ -1378,8 +1381,7 @@ local function applyTrapsandSpikesESP(color)
                 ensureHighlight(obj)
             elseif hasHook1(obj) then
                 ensureHighlight(obj)
-            elseif string.find(obj.Name, "RespawnLocation") then
-                -- Set transparency to 0 for shadow parts
+            elseif typeof(obj.Name) == "string" and string.find(obj.Name, "RespawnLocation") then
                 if obj:IsA("BasePart") then
                     obj.Transparency = 0
                 elseif obj:IsA("Model") then
@@ -2436,15 +2438,22 @@ if FluentLoaded then
         end
     })
     
-    Tabs.Game:AddButton({
-        Title = "Do Current Generator (must be in generator)",
-        Callback = function()
-            Fluent:Notify({
-                Title = "READ ME!",
-                Content = "The generator puzzle will be done after 5 seconds. Do not spam or you will get kicked!",
-                Duration = 5
-            })
-            triggerNearestGenerator()
+    Tabs.Game:AddToggle({
+        Title = "Auto Fix Generator (must be in generator)",
+		Default = false,
+        Callback = function(state)
+			autofixgenerator = state
+        end
+    })
+
+	Tabs.Game:AddSlider("OneGenSpeedValue", {
+        Title = "Do Current Generator Speed",
+        Default = 2.5,
+        Min = 2.5,
+        Max = 10,
+        Rounding = 1,
+        Callback = function(value)
+            timeforonegen = value
         end
     })
 
@@ -3338,3 +3347,9 @@ while task.wait(0.03) do
 end
 
 SaveManager:LoadAutoloadConfig()
+
+RunService.Heartbeat:Connect(function()
+	if autofixgenerator == true then
+		triggerNearestGenerator()
+	end
+end
