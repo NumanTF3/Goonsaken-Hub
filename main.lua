@@ -2483,7 +2483,7 @@ if FluentLoaded then
         end
     })
 
-    Tabs.Auto:AddParagraph({
+    Tabs.GuestSettings:AddParagraph({
         Title = "Edge Killer",
         Content = "How many seconds until it blocks (to counter smartass players) (resets when killer gets out of range)"
     })
@@ -3128,4 +3128,5 @@ Fluent:Notify({
 })
 
 SaveManager:LoadAutoloadConfig()
+
 
