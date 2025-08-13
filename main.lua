@@ -37,9 +37,10 @@ if executor == "Xeno" then
 	requireSupported = false
 else
 	checkRequireSupport()
+	print("your executor require support is: " .. tostring(requireSupported))
+	requireSupported = true
 end
 
-print("your executor require support is: " .. tostring(requireSupported))
 
 local function fireproximityprompt(Obj, Amount, Skip)
     if Obj.ClassName == "ProximityPrompt" then 
@@ -3354,3 +3355,4 @@ RunService.Heartbeat:Connect(function()
 		triggerNearestGenerator()
 	end
 end)
+
