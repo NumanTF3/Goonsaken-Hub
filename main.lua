@@ -328,8 +328,8 @@ local function getPunchCharges()
     return nil
 end
 
-local function startGuestSettings(skibiditoilet)
-    if skibiditoilet then return end -- Already running
+local function startBlockTp(state)
+    if state then return end -- Already running
 
     GuestSettingsLoop = RunService.RenderStepped:Connect(function()
         local char = localPlayer.Character
@@ -2553,6 +2553,11 @@ if FluentLoaded then
     --------------------------------------------------------------------------
     -- Auto Block Tab
     --------------------------------------------------------------------------
+	Tabs.GuestSettings:AddParagraph({
+        Title = "Credit To Skibisaken",
+        Content = "this entire tab is from the skibisaken script so join their discord at https://discord.gg/ETTV2g8kxS"
+    })
+
     Tabs.GuestSettings:AddToggle("GuestSettingsToggle", {
         Title = "Auto Block",
         Default = false,
@@ -3344,3 +3349,4 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = false
 	end
 end)
+
