@@ -3127,4 +3127,55 @@ Fluent:Notify({
     Duration = 8
 })
 
+local toggleHolder = game.CoreGui.TopBarApp.TopBarApp.UnibarLeftFrame.UnibarMenu["2"]
+local originalSize = toggleHolder.Size.X.Offset
+local sSize = UDim2.new(0, originalSize + 48, 0, toggleHolder.Size.Y.Offset)
+
+-- Create button frame inside toggleHolder
+local buttonFrame = Instance.new("Frame")
+buttonFrame.Size = UDim2.new(0, 48, 0, 44)
+buttonFrame.BackgroundTransparency = 1
+buttonFrame.BorderSizePixel = 0
+buttonFrame.Position = UDim2.new(0, toggleHolder.Size.X.Offset - 48, 0, 0)
+buttonFrame.Parent = toggleHolder
+
+-- Create the image button inside buttonFrame
+local imageButton = Instance.new("ImageButton")
+imageButton.BackgroundTransparency = 1
+imageButton.BorderSizePixel = 0
+imageButton.Size = UDim2.new(0, 36, 0, 36)
+imageButton.AnchorPoint = Vector2.new(0.5, 0.5)
+imageButton.Position = UDim2.new(0.5, 0, 0.5, 0)
+imageButton.Image = "http://www.roblox.com/asset/?id=10385136549"  -- Your icon ID here
+imageButton.Parent = buttonFrame
+
+-- Function to toggle Goonsaken Hub GUI frame visibility
+local function toggleGoonsakenHub()
+    local screenGui = game:GetService("CoreGui"):FindFirstChild("ScreenGui")
+    if screenGui then
+        screenGui.Enabled = not screenGui.Enabled
+    else
+        warn("ScreenGui not found in CoreGui")
+    end
+end
+
+
+-- Connect button activation to toggle function
+imageButton.Activated:Connect(toggleGoonsakenHub)
+
+-- Optional: Also toggle on key press (F key)
+local UIS = game:GetService("UserInputService")
+UIS.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.F then
+        toggleGoonsakenHub()
+    end
+end)
+
+-- Adjust toggleHolder size and button position every frame (to keep in sync)
+while task.wait(0.03) do
+    toggleHolder.Size = sSize
+    buttonFrame.Position = UDim2.new(0, toggleHolder.Size.X.Offset - 48, 0, 0)
+end
+
 SaveManager:LoadAutoloadConfig()
