@@ -1823,6 +1823,7 @@ local function enableInfiniteStamina(state)
 		stamina.StaminaLoss = 5 -- Stamina loss	
 		stamina.SprintSpeed = 40 -- Sprint speed
 		stamina.StaminaLossDisabled = true -- Disable stamina drain (true/false)
+	end)
 end
 
 -- Goon animation
@@ -2438,7 +2439,7 @@ if FluentLoaded then
         end
     })
     
-    Tabs.Game:AddToggle({
+    Tabs.Game:AddToggle("autofixgen", {
         Title = "Auto Fix Generator (must be in generator)",
 		Default = false,
         Callback = function(state)
@@ -3352,4 +3353,4 @@ RunService.Heartbeat:Connect(function()
 	if autofixgenerator == true then
 		triggerNearestGenerator()
 	end
-end
+end)
