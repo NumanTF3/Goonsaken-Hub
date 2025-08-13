@@ -224,7 +224,7 @@ local LMSSongs = {
     ["Creation Of Hatred"] = "rbxassetid://115884097233860",
 }
 
-local autoBlockTriggerAnims = {
+local GuestSettingsTriggerAnims = {
     "126830014841198", "126355327951215", "121086746534252", "18885909645",
     "98456918873918", "105458270463374", "83829782357897", "125403313786645",
     "118298475669935", "82113744478546", "70371667919898", "99135633258223",
@@ -237,14 +237,14 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local localPlayer = Players.LocalPlayer
 
 local blockingKillers = {}
-local AutoBlockLoop -- will hold the connection
+local GuestSettingsLoop -- will hold the connection
 
 local function getKillerActiveTriggerAnim(killer)
     local hum = killer:FindFirstChildWhichIsA("Humanoid")
     if hum and hum:FindFirstChild("Animator") then
         for _, track in ipairs(hum.Animator:GetPlayingAnimationTracks()) do
             local animId = track.Animation.AnimationId
-            for _, id in ipairs(autoBlockTriggerAnims) do
+            for _, id in ipairs(GuestSettingsTriggerAnims) do
                 if string.find(animId, id) then
                     return animId
                 end
@@ -268,10 +268,10 @@ local function getPunchCharges()
     return nil
 end
 
-local function startAutoBlock(skibiditoilet)
+local function startGuestSettings(skibiditoilet)
     if skibiditoilet then return end -- Already running
 
-    AutoBlockLoop = RunService.RenderStepped:Connect(function()
+    GuestSettingsLoop = RunService.RenderStepped:Connect(function()
         local char = localPlayer.Character
         if not char or not char:FindFirstChild("HumanoidRootPart") then return end
 
@@ -1608,7 +1608,7 @@ local guiRefs = {}
 -- Feature functions reused by GUI callbacks
 
 -- Anim Ids
-local autoBlockTriggerAnims = {
+local GuestSettingsTriggerAnims = {
     "126830014841198", "126355327951215", "121086746534252", "18885909645",
     "98456918873918", "105458270463374", "83829782357897", "125403313786645",
     "118298475669935", "82113744478546", "70371667919898", "99135633258223",
@@ -1619,7 +1619,7 @@ local autoBlockTriggerAnims = {
 }
 
 -- State Variables
-local autoBlockOn = false
+local GuestSettingsOn = false
 local strictRangeOn = false
 local looseFacing = true
 local detectionRange = 18
@@ -1630,7 +1630,7 @@ local edgeKillerDelay = 3
 local killerInRangeSince = nil
 local predictiveCooldown = 0
 
-local autoPunchOn = false
+local GuestSettingsOn = false
 local flingPunchOn = false
 local flingPower = 10000
 local hiddenfling = false
@@ -1957,7 +1957,7 @@ local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/d
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 -- Create Fluent window & tabs if Fluent loaded
-local Window, Tabs, Player, Game, Misc, Blatant, AutoBlock, Predictive, FakeBlock, AutoPunch, CustomAnimations, Settings
+local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations, Settings
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
@@ -1973,10 +1973,7 @@ if FluentLoaded then
    		Game = Window:AddTab({ Title = "Game", Icon = "lucide-gamepad-2" }),
    		Misc = Window:AddTab({ Title = "Misc", Icon = "lucide-anvil" }),
    		Blatant = Window:AddTab({ Title = "Blatant", Icon = "lucide-angry" }),
-   		AutoBlock = Window:AddTab({ Title = "Auto Block", Icon = "lucide-leaf" }),
-   		PredictiveAutoBlock = Window:AddTab({ Title = "Predictive Auto Block", Icon = "lucide-leaf" }),
-   		FakeBlock = Window:AddTab({ Title = "Fake Block", Icon = "lucide-leaf" }),
-   		AutoPunch = Window:AddTab({ Title = "Auto Punch", Icon = "lucide-leaf" }),
+   		GuestSettings = Window:AddTab({ Title = "Guest 1337 Specific", Icon = "lucide-leaf" }),
    		CustomAnimations = Window:AddTab({ Title = "Custom Animations", Icon = "lucide-person-standing" }),
 		Settings = Window:AddTab({ Title = "Settings", Icon = "lucide-settings" })
 	}
@@ -1998,7 +1995,7 @@ if FluentLoaded then
 	})
 end
 
-local autoBlockOn = false
+local GuestSettingsOn = false
 local strictRangeOn = false
 local looseFacing = true
 local detectionRange = 18
@@ -2009,7 +2006,7 @@ local edgeKillerDelay = 3
 local killerInRangeSince = nil
 local predictiveCooldown = 0
 
-local autoPunchOn = false
+local GuestSettingsOn = false
 local flingPunchOn = false
 local flingPower = 10000
 local hiddenfling = false
@@ -2399,15 +2396,15 @@ if FluentLoaded then
     --------------------------------------------------------------------------
     -- Auto Block Tab
     --------------------------------------------------------------------------
-    Tabs.AutoBlock:AddToggle("AutoBlockToggle", {
+    Tabs.GuestSettings:AddToggle("GuestSettingsToggle", {
         Title = "Auto Block",
         Default = false,
         Callback = function(Value)
-            autoBlockOn = Value
+            GuestSettingsOn = Value
         end
     })
 
-    Tabs.AutoBlock:AddToggle("StrictRangeToggle", {
+    Tabs.GuestSettings:AddToggle("StrictRangeToggle", {
         Title = "Strict Range",
         Default = false,
         Callback = function(Value)
@@ -2415,7 +2412,7 @@ if FluentLoaded then
         end
     })
 
-    Tabs.AutoBlock:AddDropdown("FacingCheckDropdown", {
+    Tabs.GuestSettings:AddDropdown("FacingCheckDropdown", {
         Title = "Facing Check",
         Values = { "Loose", "Strict" },
         Multi = false,
@@ -2425,7 +2422,7 @@ if FluentLoaded then
         end
     })
 
-    Tabs.AutoBlock:AddInput("DetectionRangeInput", {
+    Tabs.GuestSettings:AddInput("DetectionRangeInput", {
         Title = "Detection Range",
         Placeholder = "18",
         Numeric = true,
@@ -2434,17 +2431,17 @@ if FluentLoaded then
         end
     })
 
-    Tabs.AutoBlock:AddParagraph({
+    Tabs.GuestSettings:AddParagraph({
         Title = "⚠️ Warning",
         Content = "plz do not use blocktp with fake block or disaster strucks"
     })
 
-    Tabs.AutoBlock:AddParagraph({
+    Tabs.GuestSettings:AddParagraph({
         Title = "",
         Content = "increase range so block tp works better (30 studs recommended)"
     })
 
-    Tabs.AutoBlock:AddToggle("BlockTPToggle", {
+    Tabs.GuestSettings:AddToggle("BlockTPToggle", {
         Title = "Block TP",
         Default = false,
         Callback = function(Value)
@@ -2455,7 +2452,7 @@ if FluentLoaded then
     --------------------------------------------------------------------------
     -- Predictive Auto Block Tab
     --------------------------------------------------------------------------
-    Tabs.PredictiveAutoBlock:AddToggle("PredictiveBlockToggle", {
+    Tabs.GuestSettings:AddToggle("PredictiveBlockToggle", {
         Title = "Predictive Auto Block",
         Default = false,
         Callback = function(Value)
@@ -2463,7 +2460,7 @@ if FluentLoaded then
         end
     })
 
-    Tabs.PredictiveAutoBlock:AddInput("PredictiveDetectionRange", {
+    Tabs.GuestSettings:AddInput("PredictiveDetectionRange", {
         Title = "Detection Range",
         Placeholder = "10",
         Numeric = true,
@@ -2475,7 +2472,7 @@ if FluentLoaded then
         end
     })
 
-    Tabs.PredictiveAutoBlock:AddSlider("EdgeKillerSlider", {
+    Tabs.GuestSettings:AddSlider("EdgeKillerSlider", {
         Title = "Edge Killer",
         Default = 3,
         Min = 0,
@@ -2486,7 +2483,7 @@ if FluentLoaded then
         end
     })
 
-    Tabs.PredictiveAutoBlock:AddParagraph({
+    Tabs.Auto:AddParagraph({
         Title = "Edge Killer",
         Content = "How many seconds until it blocks (to counter smartass players) (resets when killer gets out of range)"
     })
@@ -2494,7 +2491,7 @@ if FluentLoaded then
     --------------------------------------------------------------------------
     -- Fake Block Tab
     --------------------------------------------------------------------------
-    Tabs.FakeBlock:AddButton({
+    Tabs.GuestSettings:AddButton({
         Title = "Load Fake Block",
         Callback = function()
             pcall(function()
@@ -2517,15 +2514,15 @@ if FluentLoaded then
     --------------------------------------------------------------------------
     -- Auto Punch Tab
     --------------------------------------------------------------------------
-    Tabs.AutoPunch:AddToggle("AutoPunchToggle", {
+    Tabs.GuestSettings:AddToggle("GuestSettingsToggle", {
         Title = "Auto Punch",
         Default = false,
         Callback = function(Value)
-            autoPunchOn = Value
+            GuestSettingsOn = Value
         end
     })
 
-    Tabs.AutoPunch:AddToggle("FlingPunchToggle", {
+    Tabs.GuestSettings:AddToggle("FlingPunchToggle", {
         Title = "Fling Punch",
         Default = false,
         Callback = function(Value)
@@ -2533,7 +2530,7 @@ if FluentLoaded then
         end
     })
 
-    Tabs.AutoPunch:AddToggle("PunchAimbotToggle", {
+    Tabs.GuestSettings:AddToggle("PunchAimbotToggle", {
         Title = "Punch Aimbot",
         Default = false,
         Callback = function(Value)
@@ -2542,7 +2539,7 @@ if FluentLoaded then
     })
 
     local predictionValue = 4
-    Tabs.AutoPunch:AddSlider("AimPredictionSlider", {
+    Tabs.GuestSettings:AddSlider("AimPredictionSlider", {
         Title = "Aim Prediction",
         Default = predictionValue,
         Min = 0,
@@ -2554,7 +2551,7 @@ if FluentLoaded then
         end
     })
 
-    Tabs.AutoPunch:AddSlider("FlingPowerSlider", {
+    Tabs.GuestSettings:AddSlider("FlingPowerSlider", {
         Title = "Fling Power",
         Default = 10000,
         Min = 5000,
@@ -2828,8 +2825,8 @@ RunService.RenderStepped:Connect(function()
             if hrp and myRoot and (hrp.Position - myRoot.Position).Magnitude <= detectionRange then
                 for _, track in ipairs(animTracks or {}) do
                     local id = tostring(track.Animation.AnimationId):match("%d+")
-                    if table.find(autoBlockTriggerAnims, id) then
-                        if autoBlockOn and (not strictRangeOn or (hrp.Position - myRoot.Position).Magnitude <= detectionRange) then
+                    if table.find(GuestSettingsTriggerAnims, id) then
+                        if GuestSettingsOn and (not strictRangeOn or (hrp.Position - myRoot.Position).Magnitude <= detectionRange) then
                             if isFacing(myRoot, hrp) then
                                 fireRemoteBlock()
                                 if customBlockEnabled and customBlockAnimId ~= "" then
@@ -2922,7 +2919,7 @@ RunService.RenderStepped:Connect(function()
 
 
     -- Auto Punch
-    if autoPunchOn then
+    if GuestSettingsOn then
         local gui = PlayerGui:FindFirstChild("MainUI")
         local punchBtn = gui and gui:FindFirstChild("AbilityContainer") and gui.AbilityContainer:FindFirstChild("Punch")
         local charges = punchBtn and punchBtn:FindFirstChild("Charges")
@@ -3131,3 +3128,4 @@ Fluent:Notify({
 })
 
 SaveManager:LoadAutoloadConfig()
+
