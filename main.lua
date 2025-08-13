@@ -3338,7 +3338,16 @@ RunService.Heartbeat:Connect(function()
 		stamina.StaminaLoss = 5 -- Stamina loss	
 		stamina.SprintSpeed = 40 -- Sprint speed
 		stamina.StaminaLossDisabled = true -- Disable stamina drain (true/false)
+	else
+		local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
+		local stamina = require(Sprinting)
+		stamina.MaxStamina = 100  -- Maximum stamina
+		stamina.MinStamina = 0  -- Minimum stamina
+		stamina.StaminaGain = 20 -- Stamina gain
+		stamina.StaminaLoss = 10 -- Stamina loss	
+		stamina.SprintSpeed = 26 -- Sprint speed
 	end
 end)
+
 
 
