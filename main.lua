@@ -1799,7 +1799,6 @@ local function enableInfiniteStamina(state)
         })
 		return
 	end
-	end)
 end
 
 -- Goon animation
@@ -3326,9 +3325,6 @@ end
 SaveManager:LoadAutoloadConfig()
 
 RunService.Heartbeat:Connect(function()
-	if autofixgenerator == true then
-		triggerNearestGenerator()
-	end
 	if isitinfiniteStamina then
     	local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
 		local stamina = require(Sprinting)
@@ -3347,7 +3343,7 @@ RunService.Heartbeat:Connect(function()
 		stamina.StaminaLoss = 10 -- Stamina loss	
 		stamina.SprintSpeed = 26 -- Sprint speed
 	end
+	if autofixgenerator == true then
+		triggerNearestGenerator()
+	end
 end)
-
-
-
