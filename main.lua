@@ -1558,7 +1558,7 @@ end
 local toggles = {
     StatsTracker = false,
     ESP = false,
-    InfiniteStamina = false,
+    infiniteStamina = false,
     AutoRejoinOnKick = true -- default ON as requested
 }
 local activeConnections = {}
@@ -1619,21 +1619,32 @@ local customChargeAnimId = ""
 local chargeAnimIds = { "106014898528300" }
 
 -- Infinite Stamina
-local function enableInfiniteStamina()
-    local success, StaminaModule = pcall(function()
-        return require(game.ReplicatedStorage.Systems.Character.Game.Sprinting)
-    end)
-    if not success or not StaminaModule then return end
+local function enableInfiniteStamina(state)
+	infiniteStamina = state
+	local success, StaminaModule = pcall(function()
+		return require(game.ReplicatedStorage.Systems.Character.Game.Sprinting)
+	end)
 
-    StaminaModule.StaminaLossDisabled = true
+	if not success then
+		Rayfield:Notify({
+			Title = "Error",
+			Content = "Your executor doesn't support this.",
+			Duration = 5,
+			Image = "ban",
+		})
+		task.wait(5)
+		return
+	end
 
-    task.spawn(function()
-        while infiniteStamina and StaminaModule do
-            task.wait(0.1)
-            StaminaModule.Stamina = StaminaModule.MaxStamina
-            StaminaModule.StaminaChanged:Fire()
-        end
-    end)
+	local connection
+	connection = game:GetService("RunService").Heartbeat:Connect(function()
+		if not SkibidiStaminaLoop then
+			connection:Disconnect()
+			StaminaModule.StaminaLossDisabled = nil
+			return
+		end
+		StaminaModule.StaminaLossDisabled = function() end
+	end)
 end
 
 -- Goon animation
@@ -2170,17 +2181,7 @@ if RayfieldLoaded then
         Name = "Infinite Stamina",
         CurrentValue = false,
         Callback = function(value)
-            infiniteStamina = value
-            if infiniteStamina then
-                enableInfiniteStamina()
-            else
-                local success, StaminaModule = pcall(function()
-                    return require(game.ReplicatedStorage.Systems.Character.Game.Sprinting)
-                end)
-                if success and StaminaModule then
-                    StaminaModule.StaminaLossDisabled = false
-                end
-            end
+            enableInfiniteStamina(value)
         end
     })
 
@@ -3043,13 +3044,3 @@ RunService.Heartbeat:Connect(function()
 	RunService.RenderStepped:Wait()
 	HumanoidRootPart.Velocity = oldVelocity
 end)
-
--- Readd infinite stamina
-game.Players.LocalPlayer.CharacterAdded:Connect(function()
-    task.wait(1)
-    if infiniteStamina then
-        enableInfiniteStamina()
-    end
-end)
-
-
