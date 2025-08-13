@@ -197,3 +197,7 @@
 
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/NumanTF3/Goonsaken-Hub/refs/heads/main/main.lua"))()
+```
+
+## Discord
+https://discord.gg/aXNagEYb2f
