@@ -1239,7 +1239,12 @@ end
 
 local function triggerNearestGenerator()
     local gui = Players.LocalPlayer:FindFirstChild("PlayerGui")
-    if gui then gui:WaitForChild("PuzzleUI", 9999) end
+    if not gui then return end
+	
+    local puzzleUI = gui:FindFirstChild("PuzzleUI")
+    if not puzzleUI then
+        return
+    end
 
     local gen = findNearestGenerator()
     if not gen or not gen:FindFirstChild("Remotes") or not gen.Remotes:FindFirstChild("RE") then
@@ -3471,3 +3476,4 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = nil
 	end
 end)
+
