@@ -2342,7 +2342,7 @@ local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/d
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 -- Create Fluent window & tabs if Fluent loaded
-local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations, Settings
+local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations, Discord, Settings
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
@@ -2360,6 +2360,7 @@ if FluentLoaded then
    		Blatant = Window:AddTab({ Title = "Blatant", Icon = "lucide-angry" }),
    		GuestSettings = Window:AddTab({ Title = "Guest 1337 Specific", Icon = "lucide-leaf" }),
    		CustomAnimations = Window:AddTab({ Title = "Custom Animations", Icon = "lucide-person-standing" }),
+		Discord = Window:AddTab({ Title = "Discord Server", Icon = "lucide-settings" }),
 		Settings = Window:AddTab({ Title = "Settings", Icon = "lucide-settings" })
 	}
 
@@ -3169,6 +3170,18 @@ if FluentLoaded then
             customChargeEnabled = value
         end
     })
+
+	Tabs.Discord:AddButton({
+        Title = "Copy Discord Invite Link",
+        Callback = function()
+			setclipboard("https://discord.gg/aXNagEYb2f")
+			Fluent:Notify({
+    			Title = "Copied Discord Invite Link!",
+    			Content = "Discord link copied to clipboard!",
+    			Duration = 8
+			})
+        end
+    })
 else
 	-- Fluent not loaded fallback: wire minimal keybinds and defaults
     warn("Fluent not loaded; GUI controls unavailable. Core features remain active via defaults where possible.")
@@ -3727,3 +3740,4 @@ track(runEvery(0.1, function()
 end))
 
 RunService.RenderStepped:Connect(NameProtect)
+
