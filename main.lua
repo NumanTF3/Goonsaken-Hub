@@ -501,56 +501,55 @@ local function startBlockTp(state)
         if not char or not char:FindFirstChild("HumanoidRootPart") then return end
 
         for _, killer in ipairs(workspace.Players.Killers:GetChildren()) do
-            if killer:IsA("Model") and killer:FindFirstChild("HumanoidRootPart") then
-                local activeAnim = getKillerActiveTriggerAnim(killer)
-
-                if activeAnim then
-                    if blockingKillers[killer] ~= activeAnim then
-                        if getPunchCharges() == "0" then
-                            blockingKillers[killer] = activeAnim
-                            local originalCF = char.HumanoidRootPart.CFrame
-
-                            -- Fire block
-                            ReplicatedStorage.Modules.Network.RemoteEvent:FireServer("UseActorAbility", "Block")
-
-                            -- Teleport in front of killer
-                            local killerHRP = killer.HumanoidRootPart
-                            local forwardOffset = killerHRP.CFrame.LookVector * 2
-                            char.HumanoidRootPart.CFrame = CFrame.new(killerHRP.Position + forwardOffset)
-
-                            -- Keep teleporting in front until animation ends or punch charge = "1"
-                            task.spawn(function()
-                                while true do
-                                    task.wait(0.05)
-                                    if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                        localPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(killerHRP.Position + killerHRP.CFrame.LookVector * 2)
-                                    end
-
-                                    local charges = getPunchCharges()
-                                    if charges == "1" then
-                                        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                        	localPlayer.Character.HumanoidRootPart.CFrame = originalCF
-                                        end
-                                        blockingKillers[killer] = nil
-                                        break
-                                    end
-
-                                    local currentAnim = getKillerActiveTriggerAnim(killer)
-                                    if currentAnim ~= activeAnim then
-                                        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                    		localPlayer.Character.HumanoidRootPart.CFrame = originalCF
-                                        end
-                                        blockingKillers[killer] = nil
-                                        break
-                                	end
-                                end
-                            end)
-                        end
-                    end
-                else
-                    blockingKillers[killer] = nil
-                end
+            if not (killer:IsA("Model") and killer:FindFirstChild("HumanoidRootPart")) then
+                blockingKillers[killer] = nil
+                continue
             end
+
+            local activeAnim = getKillerActiveTriggerAnim(killer)
+            if not activeAnim then
+                blockingKillers[killer] = nil
+                continue
+            end
+
+            if blockingKillers[killer] == activeAnim or getPunchCharges() ~= "0" then
+                continue
+            end
+
+            -- Mark killer as blocking
+            blockingKillers[killer] = activeAnim
+            local originalCF = char.HumanoidRootPart.CFrame
+
+            -- Fire block
+            ReplicatedStorage.Modules.Network.RemoteEvent:FireServer("UseActorAbility", "Block")
+
+            -- Teleport in front of killer
+            local killerHRP = killer.HumanoidRootPart
+            local function teleportInFront()
+                char.HumanoidRootPart.CFrame = CFrame.new(killerHRP.Position + killerHRP.CFrame.LookVector * 2)
+            end
+            teleportInFront()
+
+            -- Keep teleporting until animation ends or punch charge = "1"
+            task.spawn(function()
+                while true do
+                    task.wait(0.05)
+                    if not (localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")) then break end
+
+                    teleportInFront()
+
+                    local charges = getPunchCharges()
+                    local currentAnim = getKillerActiveTriggerAnim(killer)
+                    if charges == "1" or currentAnim ~= activeAnim then
+                        -- Restore original position
+                        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            localPlayer.Character.HumanoidRootPart.CFrame = originalCF
+                        end
+                        blockingKillers[killer] = nil
+                        break
+                    end
+                end
+            end)
         end
     end)
 end
@@ -3740,6 +3739,7 @@ track(runEvery(0.1, function()
 end))
 
 RunService.RenderStepped:Connect(NameProtect)
+
 
 
 
