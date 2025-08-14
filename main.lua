@@ -1428,26 +1428,28 @@ local function findNearestValidGenerator()
 end
 
 local function triggerNearestGenerator()
-    local gui = LocalPlayer:FindFirstChild("PlayerGui")
-    if not gui then return end
-    local puzzleUI = gui:FindFirstChild("PuzzleUI")
-    if not puzzleUI then return end
+	local gui = LocalPlayer:FindFirstChild("PlayerGui")
+	if not gui then return end
+	local puzzleUI = gui:FindFirstChild("PuzzleUI")
+	if not puzzleUI then return end
 
-    task.spawn(function()
-        while true do
-            local gen = findNearestValidGenerator()
-            if not gen then
-                task.wait(1) -- retry every second
-            else
-                local remotes = gen:FindFirstChild("Remotes")
-                local re = remotes and remotes:FindFirstChild("RE")
-                if re then
-                    re:FireServer()
-                end
-                task.wait(timeforonegen)
-            end
-        end
-    end)
+	local gen = findNearestValidGenerator()
+	if not gen then
+		warn("No valid generator found!")
+		return
+	end
+
+	local remotes = gen:FindFirstChild("Remotes")
+	local re = remotes and remotes:FindFirstChild("RE")
+	if re then
+		while gen and gen.Parent and gen:FindFirstChild("Progress") and gen.Progress.Value < 100 do
+			task.wait(timeforonegen) -- wait first
+			re:FireServer()
+			print("Fired generator:", gen.Name)
+		end
+	else
+		warn("Generator has no Remotes.RE")
+	end
 end
 -- Enable aimbot function
 local function enableAimbot()
@@ -3771,5 +3773,6 @@ RunService.Stepped:Connect(function()
 end)
 
 RunService.RenderStepped:Connect(NameProtect)
+
 
 
