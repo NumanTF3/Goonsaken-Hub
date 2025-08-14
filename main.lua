@@ -78,7 +78,10 @@ end
 local multiplierNames = {
     "FallSlowness",
     "Medkit",
-    "BloxyColaItem"
+    "BloxyColaItem",
+	"GuestBlocking",
+	"BeheadAbility",
+	"GuestChargeEnded"
 }
 
 -- Function to check and force multipliers
@@ -3543,6 +3546,7 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = nil
 	end
 end)
+
 
 
 
