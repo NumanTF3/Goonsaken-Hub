@@ -18,6 +18,8 @@ local hubLoaded = false
 local timeforonegen = 2.5
 local autofixgenerator = false
 local infinitestamina
+local ChargeSpeedLoop = false
+local GuestChargeSpeed = 2.833
 -- Throttled task runner
 local function runEvery(interval, fn)
     task.spawn(function()
@@ -97,6 +99,19 @@ local function enforceMultipliers()
         if mult then
             mult.Value = 1
         end
+    end
+end
+
+local function GuestChargeCustomSpeed()
+    local character = LocalPlayer.Character
+    if not character then return end
+
+    local speedMultipliers = character:FindFirstChild("SpeedMultipliers")
+    if not speedMultipliers then return end
+
+    local mult = speedMultipliers:FindFirstChild("Guest1337Charge")
+    if mult then
+         mult.Value = GuestChargeSpeed
     end
 end
 
@@ -2135,7 +2150,7 @@ local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
-    	SubTitle = "v3.0.6",
+    	SubTitle = "v3.0.7",
     	TabWidth = 160,
     	Size = UDim2.fromOffset(580, 460),
     	Theme = "Dark",
@@ -2723,6 +2738,25 @@ if FluentLoaded then
 	Tabs.GuestSettings:AddParagraph({
         Title = "Credit To Skibisaken",
         Content = "this entire tab is from the skibisaken script so join their discord at https://discord.gg/ETTV2g8kxS"
+    })
+
+	Tabs.GuestSettings:AddToggle("ChargeSpeedToggle", {
+        Title = "Custom Charge Speed",
+        Default = false,
+        Callback = function(Value)
+            ChargeSpeedLoop = Value
+        end
+    })
+
+	Tabs.GuestSettings:AddSlider("GuestChargeSpeed", {
+        Title = "Charge Speed (changes ur guest charging speed)",
+        Default = 2.833,
+        Min = 2.833,
+        Max = 15,
+        Rounding = 1,
+        Callback = function(Value)
+            GuestChargeSpeed = Value
+        end
     })
 
     Tabs.GuestSettings:AddToggle("GuestSettingsToggle", {
@@ -3486,6 +3520,13 @@ Fluent:Notify({
     Duration = 8
 })
 
+Fluent:Notify({
+    Title = "IMPORTANT!!!",
+    Content = "Go to Settings, click minimize keybind and then click the cat button top left and save it as a config along with ur other cheat settings and autoload it!!! otherwise no toggling gui",
+    Duration = 15
+})
+
+
 local hubLoaded = true
 
 local toggleHolder = game.CoreGui.TopBarApp.TopBarApp.UnibarLeftFrame.UnibarMenu["2"]
@@ -3535,6 +3576,12 @@ RunService.Heartbeat:Connect(function()
 	end
 end)
 
+RunService.Heartbeat:Connect(function()
+	if ChargeSpeedLoop == true then
+		GuestChargeCustomSpeed()
+	end
+end)
+
 RunService.Stepped:Connect(function()
 	if infinitestamina then
 		local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
@@ -3546,8 +3593,3 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = nil
 	end
 end)
-
-
-
-
-
