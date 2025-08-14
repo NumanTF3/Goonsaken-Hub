@@ -529,7 +529,7 @@ local function startBlockTp(state)
                                     local charges = getPunchCharges()
                                     if charges == "1" then
                                         if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                            localPlayer.Character.HumanoidRootPart.CFrame = originalCF
+                                        	localPlayer.Character.HumanoidRootPart.CFrame = originalCF
                                         end
                                         blockingKillers[killer] = nil
                                         break
@@ -538,11 +538,11 @@ local function startBlockTp(state)
                                     local currentAnim = getKillerActiveTriggerAnim(killer)
                                     if currentAnim ~= activeAnim then
                                         if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                            localPlayer.Character.HumanoidRootPart.CFrame = originalCF
+                                    		localPlayer.Character.HumanoidRootPart.CFrame = originalCF
                                         end
                                         blockingKillers[killer] = nil
                                         break
-                                    end
+                                	end
                                 end
                             end)
                         end
@@ -3740,4 +3740,5 @@ track(runEvery(0.1, function()
 end))
 
 RunService.RenderStepped:Connect(NameProtect)
+
 
