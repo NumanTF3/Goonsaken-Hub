@@ -1684,6 +1684,34 @@ local function trackGenerator(generator)
     end)
 end
 
+local function trackGeneratorsInFolder(folder)
+    if not folder then return end
+    for _, gen in ipairs(folder:GetDescendants()) do
+        if gen.Name == "Generator" and gen:IsA("Model") then
+            trackGenerator(gen)
+        end
+    end
+end
+
+-- Listen for Map creation / reload
+workspace.ChildAdded:Connect(function(child)
+    if child.Name == "Map" then
+        task.wait(1)
+        local ingame = child:FindFirstChild("Ingame")
+        local mapContainer = ingame and ingame:FindFirstChild("Map")
+        if mapContainer then
+            trackGeneratorsInFolder(mapContainer)
+        end
+    end
+end)
+
+-- Also listen for new generators being added mid-game
+workspace.DescendantAdded:Connect(function(obj)
+    if obj.Name == "Generator" and obj:IsA("Model") then
+        trackGenerator(obj)
+    end
+end)
+
 runEvery(0.5, function()
     local survivors = PlayersFolder:FindFirstChild("Survivors")
     if survivors then
@@ -3702,16 +3730,20 @@ RunService.Heartbeat:Connect(function()
 	end
 end)
 
+local Sprinting
+local stamina
+
 RunService.Stepped:Connect(function()
+	if infinitestamina and not Sprinting and not stamina then
+		Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
+		stamina = require(Sprinting)
+	end
 	if infinitestamina then
-		local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
-		local stamina = require(Sprinting)
 		stamina.StaminaLossDisabled = true
-	else
-		local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
-		local stamina = require(Sprinting)
+	elseif Sprinting and stamina then
 		stamina.StaminaLossDisabled = false
 	end
 end)
 
 RunService.RenderStepped:Connect(NameProtect)
+
