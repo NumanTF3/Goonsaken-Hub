@@ -75,6 +75,28 @@ local function fireproximityprompt(Obj, Amount, Skip)
     end
 end
 
+local multiplierNames = {
+    "FallSlowness",
+    "Medkit",
+    "BloxyColaItem"
+}
+
+-- Function to check and force multipliers
+local function enforceMultipliers()
+    local character = LocalPlayer.Character
+    if not character then return end
+
+    local speedMultipliers = character:FindFirstChild("SpeedMultipliers")
+    if not speedMultipliers then return end
+
+    for _, name in ipairs(multiplierNames) do
+        local mult = speedMultipliers:FindFirstChild(name)
+        if mult then
+            mult.Value = 1
+        end
+    end
+end
+
 local function firetouchinterest(totouch, whattotouchwith,nilvalue)
     pcall(function()
         local clone = totouch:Clone()
@@ -3447,6 +3469,7 @@ end)
 RunService.Heartbeat:Connect(function()
 	if AntiSlow == true then
 		checkAndSetSlowStatus()
+		enforceMultipliers()
 	end
 end)
 
@@ -3520,5 +3543,6 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = nil
 	end
 end)
+
 
 
