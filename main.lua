@@ -15,6 +15,7 @@ local Do1x1PopupsLoop = false
 local AntiSlow = false
 local hubLoaded = false
 local timeforonegen = 2.5
+local loopgen = false
 local autofixgenerator = false
 local infinitestamina
 local ChargeSpeedLoop = false
@@ -1427,29 +1428,47 @@ local function findNearestValidGenerator()
     return nearest
 end
 
-local function triggerNearestGenerator()
-	local gui = LocalPlayer:FindFirstChild("PlayerGui")
-	if not gui then return end
-	local puzzleUI = gui:FindFirstChild("PuzzleUI")
-	if not puzzleUI then return end
+local function triggerNearestGenerator(shouldLoop)
+    local PuzzleUI = LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("PuzzleUI", 9999)
+    local MapFolder = workspace:FindFirstChild("Map")
+        and workspace.Map:FindFirstChild("Ingame")
+        and workspace.Map.Ingame:FindFirstChild("Map")
+    if not MapFolder then
+        warn("Map folder not found")
+        return
+    end
 
-	local gen = findNearestValidGenerator()
-	if not gen then
-		warn("No valid generator found!")
-		return
-	end
+    task.spawn(function()
+        loopgen = true
+        while shouldLoop do
+            task.wait(timeforonegen + math.random() * 0.5) -- wait first with slight randomness
 
-	local remotes = gen:FindFirstChild("Remotes")
-	local re = remotes and remotes:FindFirstChild("RE")
-	if re then
-		while gen and gen.Parent and gen:FindFirstChild("Progress") and gen.Progress.Value < 100 do
-			task.wait(timeforonegen) -- wait first
-			re:FireServer()
-			print("Fired generator:", gen.Name)
-		end
-	else
-		warn("Generator has no Remotes.RE")
-	end
+            local closestGenerator, closestDistance = nil, math.huge
+            local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not root then break end
+            local playerPosition = root.Position
+
+            for _, gen in ipairs(MapFolder:GetChildren()) do
+                if gen.Name == "Generator" and gen:FindFirstChild("Progress") and gen.Progress.Value < 100 then
+                    local distance = (gen.PrimaryPart and gen.PrimaryPart.Position or gen:GetModelCFrame().p - playerPosition).Magnitude
+                    if distance < closestDistance then
+                        closestDistance = distance
+                        closestGenerator = gen
+                    end
+                end
+            end
+
+            if closestGenerator and closestGenerator:FindFirstChild("Remotes") and closestGenerator.Remotes:FindFirstChild("RE") then
+                closestGenerator.Remotes.RE:FireServer()
+                print("Fired generator:", closestGenerator.Name)
+            else
+                -- No valid generator left
+                break
+            end
+        end
+        loopgen = false
+        print("Generator loop ended")
+    end)
 end
 -- Enable aimbot function
 local function enableAimbot()
@@ -2670,7 +2689,7 @@ if FluentLoaded then
         Title = "Auto Fix Generator (must be in generator)",
 		Default = false,
         Callback = function(state)
-			autofixgenerator = state
+			triggerNearestGenerator(state)
         end
     })
 
@@ -3194,66 +3213,6 @@ local AttackAnimations = {
 	"rbxassetid://124243639579224", "rbxassetid://70371667919898", "rbxassetid://131543461321709",
 	"rbxassetid://136323728355613", "rbxassetid://109230267448394"
 }
---[[
-local function NameProtect(state)
-	task.wait()
-    local function updateNames()
-		task.wait()
-        local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
-        local CurrentSurvivors = playerGui:FindFirstChild("TemporaryUI")
-            and playerGui.TemporaryUI:FindFirstChild("PlayerInfo")
-            and playerGui.TemporaryUI.PlayerInfo:FindFirstChild("CurrentSurvivors")
-        
-        if CurrentSurvivors then
-            for _, People in pairs(CurrentSurvivors:GetChildren()) do
-                if People:IsA("Frame") then
-                    local name
-                    local success = false
-                    repeat
-                        name = "Protected"
-                    until success
-                    People.Username.Text = name
-                end
-            end
-        end
-    end
-
-    if state then
-        local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
-
-        local function setupConnections()
-            local TemporaryUI = playerGui:WaitForChild("TemporaryUI", math.huge)
-            local PlayerInfo = TemporaryUI:WaitForChild("PlayerInfo", math.huge)
-
-            playerGui.ChildAdded:Connect(function(child)
-                if child.Name == "TemporaryUI" then
-                    updateNames()
-                end
-            end)
-            TemporaryUI.ChildAdded:Connect(function(child)
-                if child.Name == "PlayerInfo" then
-                    updateNames()
-                end
-            end)
-            PlayerInfo.ChildAdded:Connect(function(child)
-                if child.Name == "CurrentSurvivors" then
-                    updateNames()
-                end
-            end)
-        end
-
-        setupConnections()
-        updateNames()
-
-        if playerGui.MainUI.PlayerListHolder then
-            playerGui.MainUI.PlayerListHolder:Destroy()
-        end
-        if playerGui.MainUI.Spectate.Username then
-            playerGui.MainUI.Spectate.Username.Visible = false
-        end
-    end
-end
---]]
 
 -- Helpers
 local function fireRemoteBlock()
@@ -3330,12 +3289,12 @@ local function playCustomAnim(animId, isPunch)
     end
 end
 
-RunService.RenderStepped:Connect(function()
-	local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	local Humanoid = Character:WaitForChild("Humanoid")
-	local Animator = Humanoid:WaitForChild("Animator")
-	local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-end)
+track(runEvery(0.1, function()
+    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local Humanoid = Character:FindFirstChild("Humanoid") or Character:WaitForChild("Humanoid")
+    local Animator = Humanoid:FindFirstChild("Animator") or Humanoid:WaitForChild("Animator")
+    local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart")
+end))
 
 coroutine.wrap(function()
     local hrp, c, vel, movel = nil, nil, nil, 0.1
@@ -3678,12 +3637,12 @@ RunService.Heartbeat:Connect(function()
 	HumanoidRootPart.Velocity = oldVelocity
 end)
 
-RunService.Heartbeat:Connect(function()
-	if AntiSlow == true then
-		checkAndSetSlowStatus()
-		enforceMultipliers()
-	end
-end)
+track(runEvery(0.05, function()
+    if AntiSlow then
+        checkAndSetSlowStatus()
+        enforceMultipliers()
+    end
+end))
 
 -- Select the first tab on load
 Window:SelectTab("Player")
@@ -3745,13 +3704,7 @@ end
 
 SaveManager:LoadAutoloadConfig()
 
-RunService.Heartbeat:Connect(function()
-	if autofixgenerator == true then
-		triggerNearestGenerator()
-	end
-end)
-
-RunService.Heartbeat:Connect(function()
+track(runEvery(0.05, function()
 	if ChargeSpeedLoop == true then
 		GuestChargeCustomSpeed()
 	end
@@ -3760,19 +3713,17 @@ end)
 local Sprinting
 local stamina
 
-RunService.Stepped:Connect(function()
-	if infinitestamina and not Sprinting and not stamina then
-		Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
-		stamina = require(Sprinting)
-	end
-	if infinitestamina then
-		stamina.StaminaLossDisabled = true
-	elseif Sprinting and stamina then
-		stamina.StaminaLossDisabled = false
-	end
-end)
+track(runEvery(0.1, function()
+    if infinitestamina and not Sprinting and not stamina then
+        Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
+        stamina = require(Sprinting)
+    end
+
+    if infinitestamina and stamina then
+        stamina.StaminaLossDisabled = true
+    elseif Sprinting and stamina then
+        stamina.StaminaLossDisabled = false
+    end
+end))
 
 RunService.RenderStepped:Connect(NameProtect)
-
-
-
