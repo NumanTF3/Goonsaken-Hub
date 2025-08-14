@@ -2132,7 +2132,7 @@ local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
-    	SubTitle = "v3.0.5",
+    	SubTitle = "v3.0.6",
     	TabWidth = 160,
     	Size = UDim2.fromOffset(580, 460),
     	Theme = "Dark",
@@ -3543,6 +3543,7 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = nil
 	end
 end)
+
 
 
 
