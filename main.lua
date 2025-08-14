@@ -1288,19 +1288,31 @@ local function enableAimbot()
 
                             local rootPart = character:FindFirstChild("HumanoidRootPart")
                             if rootPart then
+								if humanoid then
+									humanoid.AutoRotate = false
+								end
                                 rootPart.CFrame = CFrame.new(rootPart.Position, predictedPos)
                             end
                         end
                     end
                 end
-            end
-        end
+			else
+				if humanoid then
+					humanoid.AutoRotate = true
+				end
+			end        
+		end	
     end)
 end
 
 -- Disable aimbot function
 local function disableAimbot()
     if aimbotConnection then
+		local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.AutoRotate = true
+		end
         aimbotConnection:Disconnect()
         aimbotConnection = nil
     end
@@ -2098,7 +2110,7 @@ local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
-    	SubTitle = "v3.0.4",
+    	SubTitle = "v3.0.5",
     	TabWidth = 160,
     	Size = UDim2.fromOffset(580, 460),
     	Theme = "Dark",
@@ -2276,6 +2288,17 @@ if FluentLoaded then
             else
                 disableAimbot()
             end
+        end
+    })
+
+	Tabs.Player:AddSlider("ChanceAimbotPredictionValue", {
+        Title = "Chance Aimbot Prediction Value",
+        Default = 0.2,
+        Min = 0.1,
+        Max = 2,
+        Rounding = 1,
+        Callback = function(value)
+			timeAhead = value
         end
     })
 
@@ -3008,10 +3031,23 @@ local function isFacing(localRoot, targetRoot)
     if not facingCheckEnabled then
         return true
     end
+    if not localRoot or not targetRoot then
+        return false
+    end
 
-    local dir = (localRoot.Position - targetRoot.Position).Unit
+    local offset = localRoot.Position - targetRoot.Position
+    if offset.Magnitude == 0 then
+        return false -- same position, can't determine facing
+    end
+
+    local dir = offset.Unit
     local dot = targetRoot.CFrame.LookVector:Dot(dir)
-    return looseFacing and dot > -0.3 or dot > 0
+
+    if looseFacing then
+        return dot > -0.3
+    else
+        return dot > 0
+    end
 end
 
 local function playCustomAnim(animId, isPunch)
@@ -3225,29 +3261,37 @@ RunService.RenderStepped:Connect(function()
                     local myChar = LocalPlayer.Character
                     local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
                     if root and myRoot and (root.Position - myRoot.Position).Magnitude <= 10 then
-
+						
                         -- Aim Punch: Constant look at killer with prediction
-                        if aimPunch then
-                            local humanoid = myChar:FindFirstChild("Humanoid")
-                            if humanoid then
-                                humanoid.AutoRotate = false
-                            end
+						if aimPunch then
+							local humanoid = myChar:FindFirstChild("Humanoid")
+							if humanoid then
+								humanoid.AutoRotate = false
+							end
 
-                            task.spawn(function()
-                                local start = tick()
-                                while tick() - start < 2 do
-                                    if myRoot and root and root.Parent then
-                                        local predictedPos = root.Position + (root.CFrame.LookVector * predictionValue)
-                                        myRoot.CFrame = CFrame.lookAt(myRoot.Position, predictedPos)
-                                    end
-                                    task.wait()
-                                end
-                                -- Reset movement after aim
-                                if humanoid then
-                                    humanoid.AutoRotate = true
-                                end
-                            end)
-                        end
+							task.spawn(function()
+								local start = tick()
+								while tick() - start < 2 do
+									local myRootNow = myChar:FindFirstChild("HumanoidRootPart")
+									local targetRoot = root 
+										and root.Parent 
+										and root.Parent:FindFirstChild("HumanoidRootPart")
+
+									if myRootNow and targetRoot then
+										local predictedPos = targetRoot.Position + (targetRoot.CFrame.LookVector * predictionValue)
+										myRootNow.CFrame = CFrame.lookAt(
+											myRootNow.Position, 
+											predictedPos
+										)
+									end
+									task.wait()
+								end
+
+								if humanoid and humanoid.Parent then
+									humanoid.AutoRotate = true
+								end
+							end)
+						end
 
                         -- Trigger punch GUI button
                         for _, conn in ipairs(getconnections(punchBtn.MouseButton1Click)) do
@@ -3476,4 +3520,5 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = nil
 	end
 end)
+
 
