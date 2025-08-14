@@ -1737,13 +1737,11 @@ task.spawn(function()
     end
 
     -- watch for new generators appearing in-session (throttled)
-    runEvery(0.5, function()
-        for _, gen in ipairs(mapContainer:GetChildren()) do
-            if gen.Name == "Generator" and gen:IsA("Model") and not gen:FindFirstChild(GENERATOR_ESP_NAME) then
-                trackGenerator(gen)
-            end
+    for _, gen in ipairs(mapContainer:GetChildren()) do
+    	if gen.Name == "Generator" and gen:IsA("Model") and not gen:FindFirstChild(GENERATOR_ESP_NAME) then
+    	    trackGenerator(gen)
         end
-    end)
+    end
 end)
 
 -- Function to toggle ESP on/off
@@ -3717,4 +3715,3 @@ RunService.Stepped:Connect(function()
 end)
 
 RunService.RenderStepped:Connect(NameProtect)
-
