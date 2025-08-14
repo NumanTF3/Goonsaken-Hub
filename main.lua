@@ -12,7 +12,6 @@ local Humanoid = Character:WaitForChild("Humanoid")
 local Animator = Humanoid:WaitForChild("Animator")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local Do1x1PopupsLoop = false
-local nameprotectEnabled = false
 local AntiSlow = false
 local hubLoaded = false
 local timeforonegen = 2.5
@@ -20,6 +19,7 @@ local autofixgenerator = false
 local infinitestamina
 local ChargeSpeedLoop = false
 local GuestChargeSpeed = 2.833
+local nameprotect = false
 -- Throttled task runner
 local function runEvery(interval, fn)
     task.spawn(function()
@@ -75,6 +75,130 @@ local function fireproximityprompt(Obj, Amount, Skip)
     else 
         error("userdata<ProximityPrompt> expected")
     end
+end
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local function NameProtect()
+	if nameprotect == false then
+		return
+	end
+	local gui = LocalPlayer.PlayerGui
+	if not gui then return end
+
+	-- 1️⃣ TemporaryUI.PlayerInfo.CurrentSurvivors -> Username
+	local currentSurvivors = gui:FindFirstChild("TemporaryUI") 
+		and gui.TemporaryUI:FindFirstChild("PlayerInfo") 
+		and gui.TemporaryUI.PlayerInfo:FindFirstChild("CurrentSurvivors")
+	if currentSurvivors then
+		for _, v in pairs(currentSurvivors:GetDescendants()) do
+			if v:IsA("TextLabel") and v.Name == "Username" then
+				v.Text = "Protected"
+			end
+		end
+	end
+
+	-- 2️⃣ TemporaryUI -> any TextLabel named "Title 3"
+	local tempUI = gui:FindFirstChild("TemporaryUI")
+	if tempUI then
+		for _, v in pairs(tempUI:GetDescendants()) do
+			if v:IsA("TextLabel") and v.Name == "Title3" then
+				v.Text = "Protected"
+			end
+		end
+	end
+
+	-- 3️⃣ MainUI.PlayerListHolder.Contents.Players -> Username
+	local mainPlayers = gui:FindFirstChild("MainUI") 
+		and gui.MainUI:FindFirstChild("PlayerListHolder") 
+		and gui.MainUI.PlayerListHolder:FindFirstChild("Contents") 
+		and gui.MainUI.PlayerListHolder.Contents:FindFirstChild("Players")
+	if mainPlayers then
+		for _, v in pairs(mainPlayers:GetDescendants()) do
+			if v:IsA("TextLabel") and v.Name == "Username" then
+				v.Text = "Protected"
+			end
+		end
+	end
+
+	-- 4️⃣ TemporaryUI -> PlayerName / PlayerUsername text labels matching player usernames
+	if tempUI then
+		for _, v in pairs(tempUI:GetDescendants()) do
+			if v:IsA("TextLabel") and (v.Name == "PlayerName" or v.Name == "PlayerUsername") then
+				for _, plr in pairs(Players:GetPlayers()) do
+					if v.Text == plr.Name then
+						v.Text = "Protected"
+						v.Text = "@Protected" -- optional
+					end
+				end
+			end
+		end
+	end
+
+	-- 5️⃣ Workspace.Players.Spectating -> humanoids, set DisplayDistanceType to None
+	local spectatingFolder = workspace:FindFirstChild("Players") 
+		and workspace.Players:FindFirstChild("Spectating")
+	if spectatingFolder then
+		for _, char in pairs(spectatingFolder:GetChildren()) do
+			local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+			if humanoid then
+				humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+			end
+		end
+	end
+
+	-- 6️⃣ ImageLabels named after players
+	for _, plr in pairs(Players:GetPlayers()) do
+		local imgLabel = gui:FindFirstChild(plr.Name, true) -- recursive
+		if imgLabel and imgLabel:IsA("ImageLabel") then
+			local basicInfo = imgLabel:FindFirstChild("BasicInfo")
+			if basicInfo then
+				local nameLabel = basicInfo:FindFirstChild("PlayerName")
+				if nameLabel and nameLabel:IsA("TextLabel") then
+					nameLabel.Text = "Protected"
+				end
+				local usernameLabel = basicInfo:FindFirstChild("PlayerUsername")
+				if usernameLabel and usernameLabel:IsA("TextLabel") then
+					usernameLabel.Text = "Protected"
+				end
+			end
+		end
+	end
+
+	-- 7️⃣ MainUI.Spectate -> Username
+	local spectateUI = gui:FindFirstChild("MainUI") 
+		and gui.MainUI:FindFirstChild("Spectate")
+	if spectateUI then
+		for _, v in pairs(spectateUI:GetDescendants()) do
+			if v:IsA("TextLabel") and v.Name == "Username" then
+				v.Text = "Protected"
+			end
+		end
+	end
+
+	-- 8️⃣ EndScreen -> ChosenValue.Title
+	local chosenTitle = gui:FindFirstChild("EndScreen")
+		and gui.EndScreen:FindFirstChild("Main")
+		and gui.EndScreen.Main:FindFirstChild("PlayerStats")
+		and gui.EndScreen.Main.PlayerStats:FindFirstChild("Header")
+		and gui.EndScreen.Main.PlayerStats.Header:FindFirstChild("PlayerDropdown")
+		and gui.EndScreen.Main.PlayerStats.Header.PlayerDropdown:FindFirstChild("DropdownFrame")
+		and gui.EndScreen.Main.PlayerStats.Header.PlayerDropdown.DropdownFrame:FindFirstChild("ChosenValue")
+		and gui.EndScreen.Main.PlayerStats.Header.PlayerDropdown.DropdownFrame.ChosenValue:FindFirstChild("Title")
+
+	if chosenTitle and chosenTitle:IsA("TextLabel") then
+		chosenTitle.Text = "Protected"
+	end
+
+	-- 9️⃣ EndScreen.WinnerTitle.Usernames
+	local winnerUsernames = gui:FindFirstChild("EndScreen")
+		and gui.EndScreen:FindFirstChild("WinnerTitle")
+		and gui.EndScreen.WinnerTitle:FindFirstChild("Usernames")
+	if winnerUsernames and winnerUsernames:IsA("TextLabel") then
+		winnerUsernames.Text = "Protected"
+	end
 end
 
 local multiplierNames = {
@@ -2529,15 +2653,13 @@ if FluentLoaded then
         end
     })
 
-    --[[
     Tabs.Misc:AddToggle("NameProtect", {
-        Title = "NameProtect (Hides your username)",
+        Title = "NameProtect (Hides yours and everyone's username)",
         Default = false,
         Callback = function(state)
-            nameprotectEnabled = state
+            nameprotect = state
         end
     })
-    ]]--
 
     Tabs.Misc:AddKeybind("KillerEmoteKeybind", {
         Title = "Emote as Killer (Credit to Fartsaken)",
@@ -3593,3 +3715,6 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = false
 	end
 end)
+
+RunService.RenderStepped:Connect(NameProtect)
+
