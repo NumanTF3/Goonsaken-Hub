@@ -1397,6 +1397,7 @@ end
 
 local function applyPlayerESP(character, color)
     if not character:IsA("Model") then return end
+	if not game.Players:GetPlayerFromCharacter(character) then return end
     if character:FindFirstChild(PLAYER_ESP_NAME) then return end
 
 	if character == LocalPlayer.Character then return end
@@ -2092,7 +2093,7 @@ local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
-    	SubTitle = "v3.0.3",
+    	SubTitle = "v3.0.4",
     	TabWidth = 160,
     	Size = UDim2.fromOffset(580, 460),
     	Theme = "Dark",
@@ -3093,6 +3094,7 @@ RunService.RenderStepped:Connect(function()
         -- Auto Block: Trigger block if a valid animation is played by a killer
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= lp and plr.Character then
+			if not game.Players:GetPlayerFromCharacter(plr.Character) then return end
             local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
             local hum = plr.Character:FindFirstChildOfClass("Humanoid")
             local animTracks = hum and hum:FindFirstChildOfClass("Animator") and hum:FindFirstChildOfClass("Animator"):GetPlayingAnimationTracks()
@@ -3127,6 +3129,8 @@ RunService.RenderStepped:Connect(function()
                         local killer = workspace:FindFirstChild("Players")
                             and workspace.Players:FindFirstChild("Killers")
                             and workspace.Players.Killers:FindFirstChild(name)
+
+						if not game.Players:GetPlayerFromCharacter(killer) then return end
 
                         if killer and killer:FindFirstChild("HumanoidRootPart") then
                             lastBlockTpTime = tick()
@@ -3165,6 +3169,9 @@ RunService.RenderStepped:Connect(function()
             local killerInRange = false
 
             for _, killer in ipairs(killersFolder:GetChildren()) do
+	            if not game.Players:GetPlayerFromCharacter(killer) then
+                	continue
+            	end
                 local hrp = killer:FindFirstChild("HumanoidRootPart")
                 if hrp then
                     local dist = (myHRP.Position - hrp.Position).Magnitude
@@ -3205,6 +3212,8 @@ RunService.RenderStepped:Connect(function()
                 local killer = workspace:FindFirstChild("Players")
                     and workspace.Players:FindFirstChild("Killers")
                     and workspace.Players.Killers:FindFirstChild(name)
+
+				if not game.Players:GetPlayerFromCharacter(killer) then return end
 
                 if killer and killer:FindFirstChild("HumanoidRootPart") then
                     local root = killer.HumanoidRootPart
@@ -3462,5 +3471,3 @@ RunService.Stepped:Connect(function()
 		stamina.StaminaLossDisabled = nil
 	end
 end)
-
-
