@@ -124,7 +124,7 @@ local function NameProtect()
 		end
 	end
 
-	-- 4️⃣ TemporaryUI -> PlayerName / PlayerUsername text labels matching player usernames
+	-- 4️⃣ TemporaryUI -> PlayerName / PlayerUsername text labels matching LocalPlayer usernames
 	if tempUI then
 		for _, v in pairs(tempUI:GetDescendants()) do
 			if v:IsA("TextLabel") and (v.Name == "PlayerName" or v.Name == "PlayerUsername") then
@@ -150,7 +150,7 @@ local function NameProtect()
 		end
 	end
 
-	-- 6️⃣ ImageLabels named after players
+	-- 6️⃣ ImageLabels named after LocalPlayers
 	for _, plr in pairs(Players:GetPlayers()) do
 		local imgLabel = gui:FindFirstChild(plr.Name, true) -- recursive
 		if imgLabel and imgLabel:IsA("ImageLabel") then
@@ -263,11 +263,11 @@ local function checkAndSetSlowStatus()
         return
     end
 
-	local character = LocalPlayer.Character
+	local Character = LocalPlayer.Character
 	local Humanoid = Character:WaitForChild("Humanoid")
-    if not character then return end
+    if not Character then return end
 
-    local speedMultipliers = character:FindFirstChild("SpeedMultipliers")
+    local speedMultipliers = Character:FindFirstChild("SpeedMultipliers")
     if not speedMultipliers then return end
 
     local slowedStatus = speedMultipliers:FindFirstChild("SlowedStatus")
@@ -284,9 +284,9 @@ local function checkAndSetSlowStatus()
     fovSlowedStatus.Value = 1
 
     -- Remove Slowness UI if it exists
-    local playerGui = game.Players.LocalPlayer:FindFirstChild("PlayerGui")
-    if playerGui then
-        local mainUI = playerGui:FindFirstChild("MainUI")
+    local LocalPlayerGui = game.Players.LocalPlayer:FindFirstChild("PlayerGui")
+    if LocalPlayerGui then
+        local mainUI = LocalPlayerGui:FindFirstChild("MainUI")
         if mainUI then
             local statusContainer = mainUI:FindFirstChild("StatusContainer")
             if statusContainer then
@@ -305,16 +305,16 @@ local VIM = game:GetService("VirtualInputManager")
 function Do1x1x1x1Popups()
     runEvery(0.5, function()
         if not Do1x1PopupsLoop then return end
-        local player = Players.LocalPlayer
-        local tempUI = player:FindFirstChild("PlayerGui") and player.PlayerGui:FindFirstChild("TemporaryUI")
+        local LocalPlayer = Players.LocalPlayer
+        local tempUI = LocalPlayer:FindFirstChild("PlayerGui") and LocalPlayer.PlayerGui:FindFirstChild("TemporaryUI")
         if not tempUI then return end
 
         for _, gui in ipairs(tempUI:GetChildren()) do
             if gui.Name == "1x1x1x1Popup" and gui:IsA("GuiObject") then
                 local cx = gui.AbsolutePosition.X + (gui.AbsoluteSize.X / 2)
                 local cy = gui.AbsolutePosition.Y + (gui.AbsoluteSize.Y / 2) + 50
-                VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, true, player.PlayerGui, 1)
-                VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, false, player.PlayerGui, 1)
+                VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, true, LocalPlayer.PlayerGui, 1)
+                VIM:SendMouseButtonEvent(cx, cy, Enum.UserInputType.MouseButton1.Value, false, LocalPlayer.PlayerGui, 1)
             end
         end
     end)
@@ -329,7 +329,7 @@ local MaxRange = 120
 local hitboxmodificationEnabled = false
 
 local function ToggleInvis(enabled)
-    local character = LocalPlayer.Character or player.CharacterAdded:Wait()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
 
@@ -343,7 +343,7 @@ local function ToggleInvis(enabled)
         running = true
         spawn(function()
             while running do
-                local character = LocalPlayer.Character or player.CharacterAdded:Wait()
+                local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
                 local humanoid = character:FindFirstChildOfClass("Humanoid")
                 if not humanoid then return end
                 print("got humanoid")
@@ -385,7 +385,7 @@ local function ToggleInvis(enabled)
 end
 
 local function handleToggle(enabled)
-    local character = LocalPlayer.Character or player.CharacterAdded:Wait()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
 
@@ -399,7 +399,7 @@ local function handleToggle(enabled)
         running = true
         spawn(function()
             while running do
-                local character = LocalPlayer.Character or player.CharacterAdded:Wait()
+                local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
                 local humanoid = character:FindFirstChildOfClass("Humanoid")
                 if not humanoid then return end
 
@@ -1240,11 +1240,11 @@ if true == true then
 		}
 
 		local function GetEmoteList()
-			local player = game:GetService("Players").LocalPlayer
-			local emotes = player:FindFirstChild("PlayerData")
-					and player.PlayerData:FindFirstChild("Equipped")
-					and player.PlayerData.Equipped:FindFirstChild("Emotes")
-					and player.PlayerData.Equipped.Emotes.Value
+			local LocalPlayer = game:GetService("Players").LocalPlayer
+			local emotes = LocalPlayer:FindFirstChild("PlayerData")
+					and LocalPlayer.PlayerData:FindFirstChild("Equipped")
+					and LocalPlayer.PlayerData.Equipped:FindFirstChild("Emotes")
+					and LocalPlayer.PlayerData.Equipped.Emotes.Value
 				or ""
 			local emoteList = {}
 			for i, emote in ipairs(string.split(emotes, "|")) do
@@ -1382,8 +1382,8 @@ local function findNearestGenerator()
 
     if #generators == 0 then return nil end
 
-    local playerRoot = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not playerRoot then return nil end
+    local LocalPlayerRoot = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not LocalPlayerRoot then return nil end
 
     local nearestGen = nil
     local nearestDist = math.huge
@@ -1391,7 +1391,7 @@ local function findNearestGenerator()
     for _, gen in pairs(generators) do
         local genRoot = gen:FindFirstChild("HumanoidRootPart") or gen.PrimaryPart
         if genRoot then
-            local dist = (genRoot.Position - playerRoot.Position).Magnitude
+            local dist = (genRoot.Position - LocalPlayerRoot.Position).Magnitude
             if dist < nearestDist then
                 nearestDist = dist
                 nearestGen = gen
@@ -1446,11 +1446,11 @@ local function triggerNearestGenerator(shouldLoop)
             local closestGenerator, closestDistance = nil, math.huge
             local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
             if not root then break end
-            local playerPosition = root.Position
+            local LocalPlayerPosition = root.Position
 
             for _, gen in ipairs(MapFolder:GetChildren()) do
                 if gen.Name == "Generator" and gen:FindFirstChild("Progress") and gen.Progress.Value < 100 then
-                    local distance = (gen.PrimaryPart and gen.PrimaryPart.Position or gen:GetModelCFrame().p - playerPosition).Magnitude
+                    local distance = (gen.PrimaryPart and gen.PrimaryPart.Position or gen:GetModelCFrame().p - LocalPlayerPosition).Magnitude
                     if distance < closestDistance then
                         closestDistance = distance
                         closestGenerator = gen
@@ -1824,10 +1824,10 @@ function ESP:SetEnabled(state)
     for highlight,_ in pairs(allHighlights) do
         setHighlightVisibility(highlight, state)
     end
-	local playersFolder = game.Workspace:FindFirstChild("Players")
-    if playersFolder then
-        for _, playerType in pairs(playersFolder:GetChildren()) do -- Survivors, Killers folders etc.
-            for _, char in pairs(playerType:GetChildren()) do
+	local LocalPlayersFolder = game.Workspace:FindFirstChild("Players")
+    if LocalPlayersFolder then
+        for _, LocalPlayerType in pairs(LocalPlayersFolder:GetChildren()) do -- Survivors, Killers folders etc.
+            for _, char in pairs(LocalPlayerType:GetChildren()) do
                 local billboard = char:FindFirstChild("PlayerESPBillboard", true) -- recursive search
                 if billboard then
                     billboard.Enabled = state
@@ -1892,7 +1892,7 @@ local function createStatsTracker()
         return string.format("%dd %02dh %02dm %02ds", days, hours, minutes, seconds)
     end
 
-    local function createPlayerRow(player)
+    local function createPlayerRow(LocalPlayer)
         local button = Instance.new("TextButton")
         button.Size = UDim2.new(1, -10, 0, 100)
         button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -1903,34 +1903,34 @@ local function createStatsTracker()
         button.TextWrapped = true
         button.TextXAlignment = Enum.TextXAlignment.Left
         button.AutoButtonColor = true
-        button.LayoutOrder = player.UserId
+        button.LayoutOrder = LocalPlayer.UserId
         button.Parent = scrollFrame
 
         button.MouseButton1Click:Connect(function()
-            local timeValue = player:FindFirstChild("PlayerData")
-                and player.PlayerData:FindFirstChild("Stats")
-                and player.PlayerData.Stats:FindFirstChild("General")
-                and player.PlayerData.Stats.General:FindFirstChild("TimePlayed")
+            local timeValue = LocalPlayer:FindFirstChild("PlayerData")
+                and LocalPlayer.PlayerData:FindFirstChild("Stats")
+                and LocalPlayer.PlayerData.Stats:FindFirstChild("General")
+                and LocalPlayer.PlayerData.Stats.General:FindFirstChild("TimePlayed")
 
             local timeText = timeValue and formatTime(timeValue.Value) or "N/A"
             if setclipboard then
-                setclipboard(player.Name .. " - " .. timeText)
+                setclipboard(LocalPlayer.Name .. " - " .. timeText)
             end
         end)
 
         local connection
         connection = RunService.RenderStepped:Connect(function()
-            if not player:IsDescendantOf(Players) then
+            if not LocalPlayer:IsDescendantOf(Players) then
                 button:Destroy()
                 if connection then connection:Disconnect() end
                 return
             end
 
-            local stats = player:FindFirstChild("PlayerData") and player.PlayerData:FindFirstChild("Stats")
+            local stats = LocalPlayer:FindFirstChild("PlayerData") and LocalPlayer.PlayerData:FindFirstChild("Stats")
             local general = stats and stats:FindFirstChild("General")
             local killer = stats and stats:FindFirstChild("KillerStats")
             local survivor = stats and stats:FindFirstChild("SurvivorStats")
-            local equipped = player:FindFirstChild("PlayerData") and player.PlayerData:FindFirstChild("Equipped")
+            local equipped = LocalPlayer:FindFirstChild("PlayerData") and LocalPlayer.PlayerData:FindFirstChild("Equipped")
 
             local timePlayed = general and general:FindFirstChild("TimePlayed")
             local killerWins = killer and killer:FindFirstChild("KillerWins")
@@ -1950,7 +1950,7 @@ local function createStatsTracker()
 
             button.Text = string.format(
                 "%s\nTime Played: %s\nSurvivor Wins: %s | Losses: %s\nKiller Wins: %s | Losses: %s | Kills: %s\nEmotes: %s",
-                player.Name,
+                LocalPlayer.Name,
                 timeText,
                 sw, sl,
                 kw, kl, killCount,
@@ -1959,15 +1959,15 @@ local function createStatsTracker()
         end)
     end
 
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            createPlayerRow(player)
+    for _, LocalPlayer in ipairs(Players:GetPlayers()) do
+        if LocalPlayer ~= LocalPlayer then
+            createPlayerRow(LocalPlayer)
         end
     end
 
-    Players.PlayerAdded:Connect(function(player)
-        if player ~= LocalPlayer then
-            createPlayerRow(player)
+    Players.PlayerAdded:Connect(function(LocalPlayer)
+        if LocalPlayer ~= LocalPlayer then
+            createPlayerRow(LocalPlayer)
         end
     end)
 
@@ -2044,12 +2044,12 @@ local chargeAnimIds = { "106014898528300" }
 
 -- Goon animation
 local function startGoon()
-    local player = Players.LocalPlayer
+    local LocalPlayer = Players.LocalPlayer
     local animationId = "rbxassetid://72042024"
     if not guiRefs.GoonAnim then guiRefs.GoonAnim = nil end
 
     local function playGoonAnim()
-        local char = player.Character or player.CharacterAdded:Wait()
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local humanoid = char:FindFirstChildOfClass("Humanoid")
         if not humanoid then return end
 
@@ -2062,7 +2062,7 @@ local function startGoon()
     end
 
     playGoonAnim()
-    guiRefs.GoonConnection = player.CharacterAdded:Connect(function()
+    guiRefs.GoonConnection = LocalPlayer.CharacterAdded:Connect(function()
         if toggles.Goon then
             playGoonAnim()
         end
@@ -2082,14 +2082,14 @@ end
 
 -- LayDown animation
 local function startLayDown()
-    local player = Players.LocalPlayer
+    local LocalPlayer = Players.LocalPlayer
     local animationId = "rbxassetid://181526230"
     local skipTime = 0.2
 
     if not guiRefs.LayDownAnim then guiRefs.LayDownAnim = nil end
 
     local function playLayDownAnim()
-        local char = player.Character or player.CharacterAdded:Wait()
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local humanoid = char:FindFirstChildOfClass("Humanoid")
         if not humanoid then return end
 
@@ -2103,7 +2103,7 @@ local function startLayDown()
     end
 
     playLayDownAnim()
-    guiRefs.LayDownConnection = player.CharacterAdded:Connect(function()
+    guiRefs.LayDownConnection = LocalPlayer.CharacterAdded:Connect(function()
         if toggles.LayDown then
             playLayDownAnim()
         end
@@ -2123,21 +2123,21 @@ local function generatorDoAll()
         if map then
             for _, gen in ipairs(map:GetChildren()) do
                 if gen.Name == "Generator" and gen:IsA("Model") and gen:FindFirstChild("Progress") and gen.Progress.Value < 100 then
-                    -- Check if any players are within 25 studs of generator's Main part
-                    local playersNearby = false
-                    for _, player in ipairs(game.Players:GetPlayers()) do
-                        local char = player.Character
+                    -- Check if any LocalPlayers are within 25 studs of generator's Main part
+                    local LocalPlayersNearby = false
+                    for _, LocalPlayer in ipairs(game.Players:GetPlayers()) do
+                        local char = LocalPlayer.Character
                         local hrp = char and char:FindFirstChild("HumanoidRootPart")
                         if hrp and gen:FindFirstChild("Main") then
                             local dist = (hrp.Position - gen.Main.Position).Magnitude
                             if dist < 25 then
-                                playersNearby = true
+                                LocalPlayersNearby = true
                                 break
                             end
                         end
                     end
 
-                    if not playersNearby then
+                    if not LocalPlayersNearby then
                         table.insert(generators, gen)
                     end
                 end
@@ -2147,7 +2147,7 @@ local function generatorDoAll()
         return generators
     end
 
-    -- Save current player position to return later
+    -- Save current LocalPlayer position to return later
     local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
     local lastPosition = humanoidRootPart.CFrame
@@ -2172,7 +2172,7 @@ local function generatorDoAll()
 					generatorDirection = Vector3.new(0, 0, 1) -- fallback direction forward
 				end
 
-				-- Teleport player to generator, facing the cube (or forward)
+				-- Teleport LocalPlayer to generator, facing the cube (or forward)
 				humanoidRootPart.CFrame = CFrame.new(
 					generatorPosition + Vector3.new(0, 0.5, 0),
 					generatorPosition + Vector3.new(generatorDirection.X, 0, generatorDirection.Z)
@@ -2205,7 +2205,7 @@ local function generatorDoAll()
         end
     end
 
-    -- Return player to original position
+    -- Return LocalPlayer to original position
     humanoidRootPart.CFrame = lastPosition
 end
 
@@ -2566,7 +2566,7 @@ if FluentLoaded then
             if state then
                 Fluent:Notify({
                     Title = "Read me!",
-                    Content = "The block in the middle of your screen is your player! it is still invisible to others. it is just to guide you where you are.",
+                    Content = "The block in the middle of your screen is your LocalPlayer! it is still invisible to others. it is just to guide you where you are.",
                     Duration = 6.5,
                     Image = "lucide-leaf",
                 })
@@ -2582,7 +2582,7 @@ if FluentLoaded then
             if state then
                 Fluent:Notify({
                     Title = "Read me!",
-                    Content = "When Cloning, The block in the middle of your screen is your player! it is still invisible to others. it is just to guide you where you are.",
+                    Content = "When Cloning, The block in the middle of your screen is your LocalPlayer! it is still invisible to others. it is just to guide you where you are.",
                     Duration = 6.5,
                     Image = "lucide-leaf",
                 })
@@ -3043,7 +3043,7 @@ if FluentLoaded then
 
 	Tabs.GuestSettings:AddParagraph({
         Title = "Edge Killer",
-        Content = "How many seconds until it blocks (to counter smartass players) (resets when killer gets out of range)"
+        Content = "How many seconds until it blocks (to counter smartass LocalPlayers) (resets when killer gets out of range)"
     })
 
     --------------------------------------------------------------------------
@@ -3364,7 +3364,7 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Detect if player is playing a block animation, and blockTP is enabled
+    -- Detect if LocalPlayer is playing a block animation, and blockTP is enabled
     if blockTPEnabled and Humanoid and tick() - lastBlockTpTime >= 5 then
         for _, track in ipairs(Humanoid:GetPlayingAnimationTracks()) do
             local animId = tostring(track.Animation.AnimationId):match("%d+")
@@ -3740,5 +3740,6 @@ track(runEvery(0.1, function()
 end))
 
 RunService.RenderStepped:Connect(NameProtect)
+
 
 
