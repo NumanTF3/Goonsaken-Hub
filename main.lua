@@ -1401,29 +1401,54 @@ local function findNearestGenerator()
     return nearestGen
 end
 
-local function triggerNearestGenerator()
-    local gui = Players.LocalPlayer:FindFirstChild("PlayerGui")
-    if not gui then return end
-	
-    local puzzleUI = gui:FindFirstChild("PuzzleUI")
-    if not puzzleUI then
-        return
+local function findNearestValidGenerator()
+    local map = workspace:FindFirstChild("Map")
+    if not map then return nil end
+    local ingame = map:FindFirstChild("Ingame")
+    if not ingame then return nil end
+    local container = ingame:FindFirstChild("Map")
+    if not container then return nil end
+
+    local nearest
+    local shortestDist = math.huge
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return nil end
+
+    for _, gen in ipairs(container:GetDescendants()) do
+        if gen.Name == "Generator" and gen:IsA("Model") and gen:FindFirstChild("Progress") and gen.Progress.Value < 100 then
+            local dist = (gen.PrimaryPart.Position - root.Position).Magnitude
+            if dist < shortestDist then
+                shortestDist = dist
+                nearest = gen
+            end
+        end
     end
 
-    local gen = findNearestGenerator()
-    if not gen or not gen:FindFirstChild("Remotes") or not gen.Remotes:FindFirstChild("RE") then
-        warn("No generator or remote found!")
-        return
-    end
+    return nearest
+end
+
+local function triggerNearestGenerator()
+    local gui = LocalPlayer:FindFirstChild("PlayerGui")
+    if not gui then return end
+    local puzzleUI = gui:FindFirstChild("PuzzleUI")
+    if not puzzleUI then return end
 
     task.spawn(function()
-        while gen and gen.Parent and gen:FindFirstChild("Progress") and gen.Progress.Value < 100 do
-            task.wait(timeforonegen)
-			gen.Remotes.RE:FireServer()
+        while true do
+            local gen = findNearestValidGenerator()
+            if not gen then
+                task.wait(1) -- retry every second
+            else
+                local remotes = gen:FindFirstChild("Remotes")
+                local re = remotes and remotes:FindFirstChild("RE")
+                if re then
+                    re:FireServer()
+                end
+                task.wait(timeforonegen)
+            end
         end
     end)
 end
-
 -- Enable aimbot function
 local function enableAimbot()
     local previousPos = nil
@@ -3746,4 +3771,5 @@ RunService.Stepped:Connect(function()
 end)
 
 RunService.RenderStepped:Connect(NameProtect)
+
 
