@@ -3590,6 +3590,6 @@ RunService.Stepped:Connect(function()
 	else
 		local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
 		local stamina = require(Sprinting)
-		stamina.StaminaLossDisabled = nil
+		stamina.StaminaLossDisabled = false
 	end
 end)
