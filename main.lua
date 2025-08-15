@@ -2363,7 +2363,7 @@ local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
-    	SubTitle = "v3.1.0",
+    	SubTitle = "v3.1.1",
     	TabWidth = 160,
     	Size = UDim2.fromOffset(580, 460),
     	Theme = "Dark",
@@ -2520,7 +2520,7 @@ if FluentLoaded then
     })
 
 	Tabs.Player:AddToggle("VoidRushControl", {
-    	Title = "Void Rush Control",
+    	Title = "Void Rush Control (thx golden)",
     	Default = false,
     	Callback = function(state)
     	    if state then
@@ -3758,6 +3758,7 @@ while task.wait(0.03) do
 end
 
 SaveManager:LoadAutoloadConfig()
+
 
 
 
