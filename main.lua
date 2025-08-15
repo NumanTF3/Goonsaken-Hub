@@ -2611,7 +2611,7 @@ if FluentLoaded then
         Title = "Infinite Stamina (ONLY WORKS ON SOME EXECUTORS)",
         Default = false,
         Callback = function(value)
-			if executor == "Xeno" or executor == "Velocity" or executor == "LX63" then
+			if executor == "Xeno" or executor == "Velocity" or executor == "LX63" or executor == "Solara" then
                 Fluent:Notify({
                     Title = "Not Supported",
                     Content = "Infinite Stamina doesn't work on your executor.",
@@ -3706,4 +3706,5 @@ while task.wait(0.03) do
 end
 
 SaveManager:LoadAutoloadConfig()
+
 
