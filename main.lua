@@ -294,7 +294,6 @@ local function checkAndSetSlowStatus()
     if AntiSlow == false then
         return
     end
-	print("antislow is on")
 	local Character = LocalPlayer.Character
 	local Humanoid = Character:WaitForChild("Humanoid")
     if not Character then return end
@@ -3692,8 +3691,9 @@ RunService.Heartbeat:Connect(function()
 	HumanoidRootPart.Velocity = oldVelocity
 end)
 
-RunService.Stepped:Connect(function()
+RunService.RenderStepped:Connect(function()
     if AntiSlow then
+		wait()
         checkAndSetSlowStatus()
         enforceMultipliers()
     end
@@ -3758,6 +3758,7 @@ while task.wait(0.03) do
 end
 
 SaveManager:LoadAutoloadConfig()
+
 
 
 
