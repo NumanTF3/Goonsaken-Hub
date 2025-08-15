@@ -1,3 +1,13 @@
+local hubLoader = [[
+loadstring(game:HttpGet("https://raw.githubusercontent.com/NumanTF3/Goonsaken-Hub/refs/heads/main/main.lua"))()
+]]
+
+if queue_on_teleport then
+    queue_on_teleport(hubLoader)
+elseif syn and syn.queue_on_teleport then
+    syn.queue_on_teleport(hubLoader)
+end
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -2318,7 +2328,7 @@ local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
-    	SubTitle = "v3.0.9",
+    	SubTitle = "v3.1.0",
     	TabWidth = 160,
     	Size = UDim2.fromOffset(580, 460),
     	Theme = "Dark",
@@ -3701,6 +3711,7 @@ while task.wait(0.03) do
 end
 
 SaveManager:LoadAutoloadConfig()
+
 
 
 
