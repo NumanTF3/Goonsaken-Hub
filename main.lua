@@ -3720,7 +3720,7 @@ track(runEvery(0.05, function()
 	if ChargeSpeedLoop == true then
 		GuestChargeCustomSpeed()
 	end
-end)
+end))
 
 local Sprinting
 local stamina
@@ -3739,6 +3739,7 @@ track(runEvery(0.1, function()
 end))
 
 RunService.RenderStepped:Connect(NameProtect)
+
 
 
 
