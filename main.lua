@@ -302,7 +302,7 @@ end
 -- VirtualInputManager once (it was used but never defined)
 local VIM = game:GetService("VirtualInputManager")
 
-function Do1x1x1x1Popups()
+local function Do1x1x1x1Popups()
     runEvery(0.5, function()
         if not Do1x1PopupsLoop then return end
         local LocalPlayer = Players.LocalPlayer
@@ -3306,7 +3306,7 @@ track(runEvery(0.1, function()
     local Humanoid = Character:FindFirstChild("Humanoid") or Character:WaitForChild("Humanoid")
     local Animator = Humanoid:FindFirstChild("Animator") or Humanoid:WaitForChild("Animator")
     local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart")
-end))
+end)
 
 coroutine.wrap(function()
     local hrp, c, vel, movel = nil, nil, nil, 0.1
@@ -3654,7 +3654,7 @@ track(runEvery(0.05, function()
         checkAndSetSlowStatus()
         enforceMultipliers()
     end
-end))
+end)
 
 -- Select the first tab on load
 Window:SelectTab("Player")
@@ -3720,7 +3720,7 @@ track(runEvery(0.05, function()
 	if ChargeSpeedLoop == true then
 		GuestChargeCustomSpeed()
 	end
-end))
+end)
 
 local Sprinting
 local stamina
@@ -3736,9 +3736,10 @@ track(runEvery(0.1, function()
     elseif Sprinting and stamina then
         stamina.StaminaLossDisabled = false
     end
-end))
+end)
 
 RunService.RenderStepped:Connect(NameProtect)
+
 
 
 
