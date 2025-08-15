@@ -20,7 +20,6 @@ local autofixgenerator = false
 local infinitestamina
 local ChargeSpeedLoop = false
 local GuestChargeSpeed = 2.833
-local nameprotect = false
 local Sprinting
 local stamina
 -- Throttled task runner
@@ -47,10 +46,12 @@ end
 
 local executor = getgenv().identifyexecutor and getgenv().identifyexecutor() or "RobloxClientApp"
 
+--[[
 if executor == "Xeno" or executor == "Velocity" or executor == "LX63" then
 	print("This script and game will NOT work on " .. tostring(executor) .. " as the entire game will break if you inject it even without loading a script. It's recommended to use Swift as it supports the require function. and the game often calls a require function everytime you spawn in as a killer or survivor since the game needs to load in the stamina module as well as sprinting and abilities so when your executor injects this. it will fail on requiring the stamina module and the game will halt without being able to load anything else.")
 	return
 end
+]]--
 
 local function fireproximityprompt(Obj, Amount, Skip)
     if Obj.ClassName == "ProximityPrompt" then 
@@ -76,129 +77,128 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
-local function NameProtect()
-	if nameprotect == false then
-		return
-	end
+local function NameProtect(toggled)
+	while toggled do
+		wait()
+        local gui = LocalPlayer.PlayerGui
+        if not gui then return end
 
-	local gui = LocalPlayer.PlayerGui
-	if not gui then return end
+        -- 1️⃣ TemporaryUI.PlayerInfo.CurrentSurvivors -> Username
+        local currentSurvivors = gui:FindFirstChild("TemporaryUI") 
+            and gui.TemporaryUI:FindFirstChild("PlayerInfo") 
+            and gui.TemporaryUI.PlayerInfo:FindFirstChild("CurrentSurvivors")
 
-	-- 1️⃣ TemporaryUI.PlayerInfo.CurrentSurvivors -> Username
-	local currentSurvivors = gui:FindFirstChild("TemporaryUI") 
-		and gui.TemporaryUI:FindFirstChild("PlayerInfo") 
-		and gui.TemporaryUI.PlayerInfo:FindFirstChild("CurrentSurvivors")
+        if currentSurvivors then
+            for _, v in pairs(currentSurvivors:GetDescendants()) do
+                if v:IsA("TextLabel") and v.Name == "Username" then
+                    v.Text = "Protected"
+                end
+            end
+        end
 
-	if currentSurvivors then
-		for _, v in pairs(currentSurvivors:GetDescendants()) do
-			if v:IsA("TextLabel") and v.Name == "Username" then
-				v.Text = "Protected"
-			end
-		end
-	end
+        -- 2️⃣ TemporaryUI -> any TextLabel named "Title3"
+        local tempUI = gui:FindFirstChild("TemporaryUI")
+        if tempUI then
+            for _, v in pairs(tempUI:GetDescendants()) do
+                if v:IsA("TextLabel") and v.Name == "Title3" then
+                    v.Text = "Protected"
+                end
+            end
+        end
 
-	-- 2️⃣ TemporaryUI -> any TextLabel named "Title3"
-	local tempUI = gui:FindFirstChild("TemporaryUI")
-	if tempUI then
-		for _, v in pairs(tempUI:GetDescendants()) do
-			if v:IsA("TextLabel") and v.Name == "Title3" then
-				v.Text = "Protected"
-			end
-		end
-	end
+        -- 3️⃣ MainUI.PlayerListHolder.Contents.Players -> Username
+        local mainPlayers = gui:FindFirstChild("MainUI") 
+            and gui.MainUI:FindFirstChild("PlayerListHolder") 
+            and gui.MainUI.PlayerListHolder:FindFirstChild("Contents") 
+            and gui.MainUI.PlayerListHolder.Contents:FindFirstChild("Players")
 
-	-- 3️⃣ MainUI.PlayerListHolder.Contents.Players -> Username
-	local mainPlayers = gui:FindFirstChild("MainUI") 
-		and gui.MainUI:FindFirstChild("PlayerListHolder") 
-		and gui.MainUI.PlayerListHolder:FindFirstChild("Contents") 
-		and gui.MainUI.PlayerListHolder.Contents:FindFirstChild("Players")
+        if mainPlayers then
+            for _, v in pairs(mainPlayers:GetDescendants()) do
+                if v:IsA("TextLabel") and v.Name == "Username" then
+                    v.Text = "Protected"
+                end
+            end
+        end
 
-	if mainPlayers then
-		for _, v in pairs(mainPlayers:GetDescendants()) do
-			if v:IsA("TextLabel") and v.Name == "Username" then
-				v.Text = "Protected"
-			end
-		end
-	end
+        -- 4️⃣ TemporaryUI -> PlayerName / PlayerUsername text labels matching LocalPlayer usernames
+        if tempUI then
+            for _, v in pairs(tempUI:GetDescendants()) do
+                if v:IsA("TextLabel") and (v.Name == "PlayerName" or v.Name == "PlayerUsername") then
+                    for _, plr in pairs(Players:GetPlayers()) do
+                        if v.Text == plr.Name then
+                            v.Text = "Protected"
+                            v.Text = "@Protected" -- optional
+                        end
+                    end
+                end
+            end
+        end
 
-	-- 4️⃣ TemporaryUI -> PlayerName / PlayerUsername text labels matching LocalPlayer usernames
-	if tempUI then
-		for _, v in pairs(tempUI:GetDescendants()) do
-			if v:IsA("TextLabel") and (v.Name == "PlayerName" or v.Name == "PlayerUsername") then
-				for _, plr in pairs(Players:GetPlayers()) do
-					if v.Text == plr.Name then
-						v.Text = "Protected"
-						v.Text = "@Protected" -- optional
-					end
-				end
-			end
-		end
-	end
+        -- 5️⃣ Workspace.Players.Spectating -> humanoids, set DisplayDistanceType to None
+        local spectatingFolder = workspace:FindFirstChild("Players") 
+            and workspace.Players:FindFirstChild("Spectating")
 
-	-- 5️⃣ Workspace.Players.Spectating -> humanoids, set DisplayDistanceType to None
-	local spectatingFolder = workspace:FindFirstChild("Players") 
-		and workspace.Players:FindFirstChild("Spectating")
+        if spectatingFolder then
+            for _, char in pairs(spectatingFolder:GetChildren()) do
+                local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+                if humanoid then
+                    humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+                end
+            end
+        end
 
-	if spectatingFolder then
-		for _, char in pairs(spectatingFolder:GetChildren()) do
-			local humanoid = char:FindFirstChildWhichIsA("Humanoid")
-			if humanoid then
-				humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-			end
-		end
-	end
+        -- 6️⃣ ImageLabels named after LocalPlayers
+        for _, plr in pairs(Players:GetPlayers()) do
+            local imgLabel = gui:FindFirstChild(plr.Name, true) -- recursive
+            if imgLabel and imgLabel:IsA("ImageLabel") then
+                local basicInfo = imgLabel:FindFirstChild("BasicInfo")
+                if basicInfo then
+                    local nameLabel = basicInfo:FindFirstChild("PlayerName")
+                    if nameLabel and nameLabel:IsA("TextLabel") then
+                        nameLabel.Text = "Protected"
+                    end
+                    local usernameLabel = basicInfo:FindFirstChild("PlayerUsername")
+                    if usernameLabel and usernameLabel:IsA("TextLabel") then
+                        usernameLabel.Text = "Protected"
+                    end
+                end
+            end
+        end
 
-	-- 6️⃣ ImageLabels named after LocalPlayers
-	for _, plr in pairs(Players:GetPlayers()) do
-		local imgLabel = gui:FindFirstChild(plr.Name, true) -- recursive
-		if imgLabel and imgLabel:IsA("ImageLabel") then
-			local basicInfo = imgLabel:FindFirstChild("BasicInfo")
-			if basicInfo then
-				local nameLabel = basicInfo:FindFirstChild("PlayerName")
-				if nameLabel and nameLabel:IsA("TextLabel") then
-					nameLabel.Text = "Protected"
-				end
-				local usernameLabel = basicInfo:FindFirstChild("PlayerUsername")
-				if usernameLabel and usernameLabel:IsA("TextLabel") then
-					usernameLabel.Text = "Protected"
-				end
-			end
-		end
-	end
+        -- 7️⃣ MainUI.Spectate -> Username
+        local spectateUI = gui:FindFirstChild("MainUI") 
+            and gui.MainUI:FindFirstChild("Spectate")
 
-	-- 7️⃣ MainUI.Spectate -> Username
-	local spectateUI = gui:FindFirstChild("MainUI") 
-		and gui.MainUI:FindFirstChild("Spectate")
+        if spectateUI then
+            for _, v in pairs(spectateUI:GetDescendants()) do
+                if v:IsA("TextLabel") and v.Name == "Username" then
+                    v.Text = "Protected"
+                end
+            end
+        end
 
-	if spectateUI then
-		for _, v in pairs(spectateUI:GetDescendants()) do
-			if v:IsA("TextLabel") and v.Name == "Username" then
-				v.Text = "Protected"
-			end
-		end
-	end
+        -- 8️⃣ EndScreen -> ChosenValue.Title
+        local chosenTitle = gui:FindFirstChild("EndScreen")
+            and gui.EndScreen:FindFirstChild("Main")
+            and gui.EndScreen.Main:FindFirstChild("PlayerStats")
+            and gui.EndScreen.Main.PlayerStats:FindFirstChild("Header")
+            and gui.EndScreen.Main.PlayerStats.Header:FindFirstChild("PlayerDropdown")
+            and gui.EndScreen.Main.PlayerStats.Header.PlayerDropdown:FindFirstChild("DropdownFrame")
+            and gui.EndScreen.Main.PlayerStats.Header.PlayerDropdown.DropdownFrame:FindFirstChild("ChosenValue")
+            and gui.EndScreen.Main.PlayerStats.Header.PlayerDropdown.DropdownFrame.ChosenValue:FindFirstChild("Title")
 
-	-- 8️⃣ EndScreen -> ChosenValue.Title
-	local chosenTitle = gui:FindFirstChild("EndScreen")
-		and gui.EndScreen:FindFirstChild("Main")
-		and gui.EndScreen.Main:FindFirstChild("PlayerStats")
-		and gui.EndScreen.Main.PlayerStats:FindFirstChild("Header")
-		and gui.EndScreen.Main.PlayerStats.Header:FindFirstChild("PlayerDropdown")
-		and gui.EndScreen.Main.PlayerStats.Header.PlayerDropdown:FindFirstChild("DropdownFrame")
-		and gui.EndScreen.Main.PlayerStats.Header.PlayerDropdown.DropdownFrame:FindFirstChild("ChosenValue")
-		and gui.EndScreen.Main.PlayerStats.Header.PlayerDropdown.DropdownFrame.ChosenValue:FindFirstChild("Title")
+        if chosenTitle and chosenTitle:IsA("TextLabel") then
+            chosenTitle.Text = "Protected"
+        end
 
-	if chosenTitle and chosenTitle:IsA("TextLabel") then
-		chosenTitle.Text = "Protected"
-	end
+        -- 9️⃣ EndScreen.WinnerTitle.Usernames
+        local winnerUsernames = gui:FindFirstChild("EndScreen")
+            and gui.EndScreen:FindFirstChild("WinnerTitle")
+            and gui.EndScreen.WinnerTitle:FindFirstChild("Usernames")
 
-	-- 9️⃣ EndScreen.WinnerTitle.Usernames
-	local winnerUsernames = gui:FindFirstChild("EndScreen")
-		and gui.EndScreen:FindFirstChild("WinnerTitle")
-		and gui.EndScreen.WinnerTitle:FindFirstChild("Usernames")
-
-	if winnerUsernames and winnerUsernames:IsA("TextLabel") then
-		winnerUsernames.Text = "Protected"
+        if winnerUsernames and winnerUsernames:IsA("TextLabel") then
+            winnerUsernames.Text = "Protected"
+        end
 	end
 end
 
@@ -227,19 +227,6 @@ local function enforceMultipliers()
     end
 end
 
-local function GuestChargeCustomSpeed()
-    local character = LocalPlayer.Character
-    if not character then return end
-
-    local speedMultipliers = character:FindFirstChild("SpeedMultipliers")
-    if not speedMultipliers then return end
-
-    local mult = speedMultipliers:FindFirstChild("Guest1337Charge")
-    if mult then
-         mult.Value = GuestChargeSpeed
-    end
-end
-
 local function firetouchinterest(totouch, whattotouchwith,nilvalue)
     pcall(function()
         local clone = totouch:Clone()
@@ -262,7 +249,7 @@ local function checkAndSetSlowStatus()
     if AntiSlow == false then
         return
     end
-
+	print("antislow is on")
 	local Character = LocalPlayer.Character
 	local Humanoid = Character:WaitForChild("Humanoid")
     if not Character then return end
@@ -303,7 +290,7 @@ end
 local VIM = game:GetService("VirtualInputManager")
 
 local function Do1x1x1x1Popups()
-    runEvery(0.5, function()
+    runEvery(0.05, function()
         if not Do1x1PopupsLoop then return end
         local LocalPlayer = Players.LocalPlayer
         local tempUI = LocalPlayer:FindFirstChild("PlayerGui") and LocalPlayer.PlayerGui:FindFirstChild("TemporaryUI")
@@ -1428,47 +1415,33 @@ local function findNearestValidGenerator()
 end
 
 local function triggerNearestGenerator(shouldLoop)
-    local PuzzleUI = LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("PuzzleUI", 9999)
-    local MapFolder = workspace:FindFirstChild("Map")
-        and workspace.Map:FindFirstChild("Ingame")
-        and workspace.Map.Ingame:FindFirstChild("Map")
-    if not MapFolder then
-        warn("Map folder not found")
-        return
-    end
-
-    task.spawn(function()
-        loopgen = true
-        while shouldLoop do
-            task.wait(timeforonegen + math.random() * 0.5) -- wait first with slight randomness
-
-            local closestGenerator, closestDistance = nil, math.huge
-            local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not root then break end
-            local LocalPlayerPosition = root.Position
-
-            for _, gen in ipairs(MapFolder:GetChildren()) do
-                if gen.Name == "Generator" and gen:FindFirstChild("Progress") and gen.Progress.Value < 100 then
-                    local distance = (gen.PrimaryPart and gen.PrimaryPart.Position or gen:GetModelCFrame().p - LocalPlayerPosition).Magnitude
-                    if distance < closestDistance then
-                        closestDistance = distance
-                        closestGenerator = gen
-                    end
-                end
-            end
-
-            if closestGenerator and closestGenerator:FindFirstChild("Remotes") and closestGenerator.Remotes:FindFirstChild("RE") then
-                closestGenerator.Remotes.RE:FireServer()
-                print("Fired generator:", closestGenerator.Name)
-            else
-                -- No valid generator left
-                break
-            end
-        end
-        loopgen = false
-        print("Generator loop ended")
-    end)
+	while shouldLoop do
+		looping = true
+		local PuzzleUI = Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("PuzzleUI", 9999)
+		task.wait(timeforonegen + math.random() * 0.5)
+		local MapFolder = workspace:FindFirstChild("Map")
+			and workspace.Map:FindFirstChild("Ingame")
+			and workspace.Map.Ingame:FindFirstChild("Map")
+		if MapFolder then
+			local closestGenerator, closestDistance = nil, math.huge
+			local playerPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
+			for _, g in ipairs(MapFolder:GetChildren()) do
+				if g.Name == "Generator" and g.Progress.Value < 100 then
+					local distance = (g.Main.Position - playerPosition).Magnitude
+					if distance < closestDistance then
+						closestDistance = distance
+						closestGenerator = g
+					end
+				end
+			end
+			if closestGenerator then
+				closestGenerator.Remotes.RE:FireServer()
+			end
+		end
+	end
+	looping = false
 end
+
 -- Enable aimbot function
 local function enableAimbot()
     local previousPos = nil
@@ -2185,7 +2158,7 @@ local function generatorDoAll()
                     prompt = gen.Main:FindFirstChild("Prompt")
                 end
                 if prompt then
-                    fireproximityprompt(prompt, 1, false)
+                    fireproximityprompt(prompt, 1.5, false)
                 else
                     warn("No prompt found on generator:", gen.Name)
                 end
@@ -2345,7 +2318,7 @@ local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
-    	SubTitle = "v3.0.7",
+    	SubTitle = "v3.0.8",
     	TabWidth = 160,
     	Size = UDim2.fromOffset(580, 460),
     	Theme = "Dark",
@@ -2633,13 +2606,22 @@ if FluentLoaded then
             end
         end
     })
-	
+	--[[
     Tabs.Game:AddToggle("InfiniteStamina", {
         Title = "Infinite Stamina (ONLY WORKS ON SOME EXECUTORS)",
         Default = false,
         Callback = function(value)
             infinitestamina = value
 			task.spawn(function()
+				if executor == "Xeno" or executor == "Velocity" or executor == "LX63" then
+            	    Fluent:Notify({
+            	        Title = "Not Supported",
+            	        Content = "Infinite Stamina doesn't work on your executor.",
+            	        Duration = 6.5,
+            	        Image = "lucide-leaf",
+            	    })
+					return
+				end
             	while infinitestamina do
             	    local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
             	    local stamina = require(Sprinting)
@@ -2654,7 +2636,7 @@ if FluentLoaded then
     	    end)
     	end
 	})
-	
+	]]--
     -- Auto Rejoin on Kick (default ON)
     Tabs.Game:AddToggle("AutoRejoinToggle", {
         Title = "Auto Rejoin on Kick",
@@ -2729,7 +2711,8 @@ if FluentLoaded then
         Title = "NameProtect (Hides yours and everyone's username)",
         Default = false,
         Callback = function(state)
-            nameprotect = state
+			local nameprotectloop = state
+            RunService.RenderStepped:Connect(NameProtect(nameprotectloop))
         end
     })
 
@@ -2768,7 +2751,7 @@ if FluentLoaded then
 						Duration = 5
 					})
 
-					local request = (syn and syn.request) or http_request or request
+					local request = http_request or syn.request or request
 					if not request then error("Executor does not support HTTP requests.") end
 
 					local response = request({
@@ -2938,12 +2921,22 @@ if FluentLoaded then
         Title = "Custom Charge Speed",
         Default = false,
         Callback = function(Value)
-            ChargeSpeedLoop = Value
-        end
+			RunService.Stepped:Connect(function()
+				if Value == true then
+					local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+       		 		local speedMultipliers = character:FindFirstChild("SpeedMultipliers")
+        			local mult = speedMultipliers and speedMultipliers:FindFirstChild("Guest1337Charge")
+        			if mult and GuestChargeSpeed ~= nil then
+        	   		mult.Value = GuestChargeSpeed
+        			    print("Guest charge speed set to", GuestChargeSpeed)
+        			end
+				end			
+			end)
+		end
     })
 
 	Tabs.GuestSettings:AddSlider("GuestChargeSpeed", {
-        Title = "Charge Speed (changes ur guest charging speed)",
+        Title = "Charge Speed",
         Default = 2.833,
         Min = 2.833,
         Max = 15,
@@ -3197,8 +3190,6 @@ end
 
 -- Initially disable ESP visuals (kept behavior)
 ESP:SetEnabled(false)
-
-print("Goonsaken Hub by NumanTF2")
 
 local AttackAnimations = {
 	"rbxassetid://131430497821198", "rbxassetid://83829782357897", "rbxassetid://126830014841198",
@@ -3649,7 +3640,7 @@ RunService.Heartbeat:Connect(function()
 	HumanoidRootPart.Velocity = oldVelocity
 end)
 
-runEvery(0.05, function()
+RunService.Stepped:Connect(function()
     if AntiSlow then
         checkAndSetSlowStatus()
         enforceMultipliers()
@@ -3715,24 +3706,3 @@ while task.wait(0.03) do
 end
 
 SaveManager:LoadAutoloadConfig()
-
-runEvery(0.05, function()
-	if ChargeSpeedLoop == true then
-		GuestChargeCustomSpeed()
-	end
-end)
-
-runEvery(0.1, function()
-    if infinitestamina and not Sprinting and not stamina then
-        Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
-        stamina = require(Sprinting)
-    end
-
-    if infinitestamina and stamina then
-        stamina.StaminaLossDisabled = true
-    elseif Sprinting and stamina then
-        stamina.StaminaLossDisabled = false
-    end
-end)
-
-RunService.RenderStepped:Connect(NameProtect)
