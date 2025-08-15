@@ -63,6 +63,41 @@ if executor == "Xeno" or executor == "Velocity" or executor == "LX63" then
 end
 ]]--
 
+local ORIGINAL_DASH_SPEED = 60
+
+local isOverrideActive = false
+local connection
+
+-- Start dash override
+local function startvoidrushcontrol()
+    if isOverrideActive then return end
+    isOverrideActive = true
+
+    connection = RunService.RenderStepped:Connect(function()
+        Humanoid.WalkSpeed = ORIGINAL_DASH_SPEED
+        Humanoid.AutoRotate = false
+
+        local direction = HumanoidRootPart.CFrame.LookVector
+        local horizontalDirection = Vector3.new(direction.X, 0, direction.Z).Unit
+        Humanoid:Move(horizontalDirection)
+    end)
+end
+
+-- Stop dash override
+local function stopvoidrushcontrol()
+    if not isOverrideActive then return end
+    isOverrideActive = false
+
+    Humanoid.WalkSpeed = 16
+    Humanoid.AutoRotate = true
+    Humanoid:Move(Vector3.new(0, 0, 0))
+
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+end
+
 local function fireproximityprompt(Obj, Amount, Skip)
     if Obj.ClassName == "ProximityPrompt" then 
         Amount = Amount or 1
@@ -2484,6 +2519,18 @@ if FluentLoaded then
         end
     })
 
+	Tabs.Player:AddToggle("VoidRushControl", {
+    	Title = "Void Rush Control",
+    	Default = false,
+    	Callback = function(state)
+    	    if state then
+    	        startvoidrushcontrol()
+    	    else
+    	        stopvoidrushcontrol()
+    	    end
+    	end
+	})
+
     Tabs.Player:AddButton({
         Title = "Auto 404 Parry",
         Callback = function()
@@ -3711,6 +3758,7 @@ while task.wait(0.03) do
 end
 
 SaveManager:LoadAutoloadConfig()
+
 
 
 
