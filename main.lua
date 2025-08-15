@@ -21,6 +21,8 @@ local infinitestamina
 local ChargeSpeedLoop = false
 local GuestChargeSpeed = 2.833
 local nameprotect = false
+local Sprinting
+local stamina
 -- Throttled task runner
 local function runEvery(interval, fn)
     task.spawn(function()
@@ -78,6 +80,7 @@ local function NameProtect()
 	if nameprotect == false then
 		return
 	end
+
 	local gui = LocalPlayer.PlayerGui
 	if not gui then return end
 
@@ -85,6 +88,7 @@ local function NameProtect()
 	local currentSurvivors = gui:FindFirstChild("TemporaryUI") 
 		and gui.TemporaryUI:FindFirstChild("PlayerInfo") 
 		and gui.TemporaryUI.PlayerInfo:FindFirstChild("CurrentSurvivors")
+
 	if currentSurvivors then
 		for _, v in pairs(currentSurvivors:GetDescendants()) do
 			if v:IsA("TextLabel") and v.Name == "Username" then
@@ -93,7 +97,7 @@ local function NameProtect()
 		end
 	end
 
-	-- 2️⃣ TemporaryUI -> any TextLabel named "Title 3"
+	-- 2️⃣ TemporaryUI -> any TextLabel named "Title3"
 	local tempUI = gui:FindFirstChild("TemporaryUI")
 	if tempUI then
 		for _, v in pairs(tempUI:GetDescendants()) do
@@ -108,6 +112,7 @@ local function NameProtect()
 		and gui.MainUI:FindFirstChild("PlayerListHolder") 
 		and gui.MainUI.PlayerListHolder:FindFirstChild("Contents") 
 		and gui.MainUI.PlayerListHolder.Contents:FindFirstChild("Players")
+
 	if mainPlayers then
 		for _, v in pairs(mainPlayers:GetDescendants()) do
 			if v:IsA("TextLabel") and v.Name == "Username" then
@@ -133,6 +138,7 @@ local function NameProtect()
 	-- 5️⃣ Workspace.Players.Spectating -> humanoids, set DisplayDistanceType to None
 	local spectatingFolder = workspace:FindFirstChild("Players") 
 		and workspace.Players:FindFirstChild("Spectating")
+
 	if spectatingFolder then
 		for _, char in pairs(spectatingFolder:GetChildren()) do
 			local humanoid = char:FindFirstChildWhichIsA("Humanoid")
@@ -163,6 +169,7 @@ local function NameProtect()
 	-- 7️⃣ MainUI.Spectate -> Username
 	local spectateUI = gui:FindFirstChild("MainUI") 
 		and gui.MainUI:FindFirstChild("Spectate")
+
 	if spectateUI then
 		for _, v in pairs(spectateUI:GetDescendants()) do
 			if v:IsA("TextLabel") and v.Name == "Username" then
@@ -189,6 +196,7 @@ local function NameProtect()
 	local winnerUsernames = gui:FindFirstChild("EndScreen")
 		and gui.EndScreen:FindFirstChild("WinnerTitle")
 		and gui.EndScreen.WinnerTitle:FindFirstChild("Usernames")
+
 	if winnerUsernames and winnerUsernames:IsA("TextLabel") then
 		winnerUsernames.Text = "Protected"
 	end
@@ -3714,9 +3722,6 @@ runEvery(0.05, function()
 	end
 end)
 
-local Sprinting
-local stamina
-
 runEvery(0.1, function()
     if infinitestamina and not Sprinting and not stamina then
         Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
@@ -3731,5 +3736,3 @@ runEvery(0.1, function()
 end)
 
 RunService.RenderStepped:Connect(NameProtect)
-
-
