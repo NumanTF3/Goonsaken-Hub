@@ -2318,7 +2318,7 @@ local Window, Tabs, Player, Game, Misc, Blatant, GuestSettings, CustomAnimations
 if FluentLoaded then
     Window = Fluent:CreateWindow({
     	Title = "Goonsaken Hub",
-    	SubTitle = "v3.0.8",
+    	SubTitle = "v3.0.9",
     	TabWidth = 160,
     	Size = UDim2.fromOffset(580, 460),
     	Theme = "Dark",
@@ -2716,15 +2716,10 @@ if FluentLoaded then
         end
     })
 
-    Tabs.Misc:AddKeybind("KillerEmoteKeybind", {
-        Title = "Emote as Killer (Credit to Fartsaken)",
-        Mode = "Always",
-        Default = "L",
+    Tabs.Misc:AddButton({
+        Title = "FPS Boost (makes ur game look ahh)",
         Callback = function()
-            local existence = PlayerGui:FindFirstChild("KillerEmoteGUI") -- SAFE check
-            if existence == nil then
-                KillerEmoteGUI()
-            end
+			loadstring(game:HttpGet('https://raw.githubusercontent.com/NumanTF3/roblox-fpsboost-script/refs/heads/main/main.lua'))()
         end
     })
 
@@ -3706,5 +3701,6 @@ while task.wait(0.03) do
 end
 
 SaveManager:LoadAutoloadConfig()
+
 
 
