@@ -47,6 +47,7 @@ local executor = getgenv().identifyexecutor and getgenv().identifyexecutor() or 
 
 if executor == "Xeno" or executor == "Velocity" or executor == "LX63" then
 	print("This script and game will NOT work on " .. tostring(executor) .. " as the entire game will break if you inject it even without loading a script. It's recommended to use Swift as it supports the require function. and the game often calls a require function everytime you spawn in as a killer or survivor since the game needs to load in the stamina module as well as sprinting and abilities so when your executor injects this. it will fail on requiring the stamina module and the game will halt without being able to load anything else.")
+end
 
 local function fireproximityprompt(Obj, Amount, Skip)
     if Obj.ClassName == "ProximityPrompt" then 
@@ -3729,3 +3730,4 @@ runEvery(0.1, function()
 end)
 
 RunService.RenderStepped:Connect(NameProtect)
+
