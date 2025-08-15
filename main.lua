@@ -45,18 +45,8 @@ end
 
 local executor = getgenv().identifyexecutor and getgenv().identifyexecutor() or "RobloxClientApp"
 
-local function checkRequireSupport()
-    local dummyModule = Instance.new("ModuleScript")
-    dummyModule.Source = "return true"
-	dummyModule.Parent = game:GetService("ReplicatedStorage")
-    
-    local success, result = pcall(function()
-        return require(dummyModule)
-    end)
-
-    requireSupported = success and result == true
-    dummyModule:Destroy()
-end
+if executor == "Xeno" or executor == "Velocity" or executor == "LX63" then
+	print("This script and game will NOT work on " .. tostring(executor) .. " as the entire game will break if you inject it even without loading a script. It's recommended to use Swift as it supports the require function. and the game often calls a require function everytime you spawn in as a killer or survivor since the game needs to load in the stamina module as well as sprinting and abilities so when your executor injects this. it will fail on requiring the stamina module and the game will halt without being able to load anything else.")
 
 local function fireproximityprompt(Obj, Amount, Skip)
     if Obj.ClassName == "ProximityPrompt" then 
@@ -1789,7 +1779,7 @@ task.spawn(function()
     end
 end)
 
-track(Workspace.DescendantAdded:Connect(highlightToolIfNeeded))
+Workspace.DescendantAdded:Connect(highlightToolIfNeeded)
 
 -- Generator ESP loop (preserved)
 -- Find map once (with retries), then track generators, plus a 0.5s poll for *new* generators
@@ -3301,7 +3291,7 @@ local function playCustomAnim(animId, isPunch)
     end
 end
 
-track(runEvery(0.1, function()
+runEvery(0.1, function()
     local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local Humanoid = Character:FindFirstChild("Humanoid") or Character:WaitForChild("Humanoid")
     local Animator = Humanoid:FindFirstChild("Animator") or Humanoid:WaitForChild("Animator")
@@ -3649,7 +3639,7 @@ RunService.Heartbeat:Connect(function()
 	HumanoidRootPart.Velocity = oldVelocity
 end)
 
-track(runEvery(0.05, function()
+runEvery(0.05, function()
     if AntiSlow then
         checkAndSetSlowStatus()
         enforceMultipliers()
@@ -3716,7 +3706,7 @@ end
 
 SaveManager:LoadAutoloadConfig()
 
-track(runEvery(0.05, function()
+runEvery(0.05, function()
 	if ChargeSpeedLoop == true then
 		GuestChargeCustomSpeed()
 	end
@@ -3725,7 +3715,7 @@ end)
 local Sprinting
 local stamina
 
-track(runEvery(0.1, function()
+runEvery(0.1, function()
     if infinitestamina and not Sprinting and not stamina then
         Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
         stamina = require(Sprinting)
@@ -3739,9 +3729,3 @@ track(runEvery(0.1, function()
 end)
 
 RunService.RenderStepped:Connect(NameProtect)
-
-
-
-
-
-
