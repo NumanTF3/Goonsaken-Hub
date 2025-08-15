@@ -2606,22 +2606,22 @@ if FluentLoaded then
             end
         end
     })
-	--[[
+
     Tabs.Game:AddToggle("InfiniteStamina", {
         Title = "Infinite Stamina (ONLY WORKS ON SOME EXECUTORS)",
         Default = false,
         Callback = function(value)
+			if executor == "Xeno" or executor == "Velocity" or executor == "LX63" then
+                Fluent:Notify({
+                    Title = "Not Supported",
+                    Content = "Infinite Stamina doesn't work on your executor.",
+                    Duration = 6.5,
+                    Image = "lucide-leaf",
+                })
+				return
+			end
             infinitestamina = value
 			task.spawn(function()
-				if executor == "Xeno" or executor == "Velocity" or executor == "LX63" then
-            	    Fluent:Notify({
-            	        Title = "Not Supported",
-            	        Content = "Infinite Stamina doesn't work on your executor.",
-            	        Duration = 6.5,
-            	        Image = "lucide-leaf",
-            	    })
-					return
-				end
             	while infinitestamina do
             	    local Sprinting = game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting
             	    local stamina = require(Sprinting)
@@ -2636,7 +2636,7 @@ if FluentLoaded then
     	    end)
     	end
 	})
-	]]--
+	
     -- Auto Rejoin on Kick (default ON)
     Tabs.Game:AddToggle("AutoRejoinToggle", {
         Title = "Auto Rejoin on Kick",
@@ -3706,3 +3706,4 @@ while task.wait(0.03) do
 end
 
 SaveManager:LoadAutoloadConfig()
+
