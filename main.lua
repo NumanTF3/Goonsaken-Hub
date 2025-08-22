@@ -2326,7 +2326,7 @@ local function createFrontflip()
             if gameProcessedEvent then return end
             local focused = UserInputService:GetFocusedTextBox()
             if focused then return end
-            if input.KeyCode == Enum.KeyCode.F then
+            if input.KeyCode == Enum.KeyCode.P then
                 FortniteFlips()
             end
         end)
@@ -2502,7 +2502,7 @@ if FluentLoaded then
     })
 
     Tabs.Player:AddButton({
-        Title = "Frontflip (Key: F) (Credit to Fartsaken)",
+        Title = "Frontflip (Key: P) (Credit to Fartsaken)",
         Callback = function()
             if frontflipObj and frontflipObj.Flip then
                 frontflipObj.Flip()
@@ -3758,6 +3758,7 @@ while task.wait(0.03) do
 end
 
 SaveManager:LoadAutoloadConfig()
+
 
 
 
