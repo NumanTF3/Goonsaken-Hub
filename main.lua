@@ -21,6 +21,8 @@ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local Animator = Humanoid:WaitForChild("Animator")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local TextChatService = game:GetService("TextChatService")
+local chatWindow = TextChatService:WaitForChild("ChatWindowConfiguration")
 local Do1x1PopupsLoop = false
 local AntiSlow = false
 local hubLoaded = false
@@ -3757,12 +3759,8 @@ while task.wait(0.03) do
     buttonFrame.Position = UDim2.new(0, toggleHolder.Size.X.Offset - 48, 0, 0)
 end
 
+RunService.Heartbeat:Connect(function()
+	chatWindow.Enabled = true
+end)
+
 SaveManager:LoadAutoloadConfig()
-
-
-
-
-
-
-
-
